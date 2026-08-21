@@ -56,7 +56,6 @@ function fetchDataFromSheet() {
                 window.store = data;
                 window.safeSetStorage('kembang_store', window.store);
                 renderAll();
-                alert("✅ Data berhasil disinkronkan dari Google Sheet!");
             }
         })
         .catch(err => {
@@ -87,9 +86,6 @@ function changeLalunaPhoto() {
     var url = document.getElementById('input-laluna-url').value.trim();
     if (url) {
         window.safeSetStorage('kembang_laluna_photo', url);
-        alert("Foto Laluna Musik berhasil diperbarui!");
-    } else {
-        alert("Harap masukkan URL Foto!");
     }
 }
 
@@ -136,7 +132,6 @@ function toggleAdminMode() {
         
         if (descVal && amountVal) { saveTransaction(); }
 
-        alert("💾 Data berhasil dikunci & disimpan!");
         window.isAdminLoggedIn = false; 
         window.tableUnlocked.dangdut = false;
         window.tableUnlocked.makam = false;
@@ -164,8 +159,6 @@ function submitLogin() {
 
         loadFooterSettingsUI();
         renderAll(); 
-    } else {
-        alert("Username atau Password salah!");
     }
 }
 
@@ -248,9 +241,6 @@ function saveFooterText() {
     if (textVal) {
         window.safeSetStorage('kembang_footer_text', textVal);
         applyFooterSettings();
-        alert("✅ Teks footer berhasil disimpan!");
-    } else {
-        alert("Harap isi teks footer!");
     }
 }
 
@@ -277,10 +267,7 @@ function changeAccountCredentials() {
         window.ADMIN_PASSWORD = newPass;
         window.safeSetStorage('kembang_user', newUser);
         window.safeSetStorage('kembang_pass', newPass);
-        alert("✅ Username & Password berhasil diperbarui!");
         showTransactionForm();
-    } else {
-        alert("Harap isi Username dan Password baru!");
     }
 }
 
@@ -306,7 +293,6 @@ function changeBackground() {
     if (url) {
         window.safeSetStorage('kembang_bg', url);
         document.getElementById('bg-overlay').style.backgroundImage = `url('${url}')`;
-        alert("Gambar background berhasil diperbarui!");
     }
 }
 
@@ -372,10 +358,7 @@ function handleFormSubmit(e) {
     var descVal = document.getElementById('input-desc').value;
     var amountVal = parseInt(document.getElementById('input-amount').value) || 0;
 
-    if (!descVal || !amountVal) {
-        alert("Harap isi Keterangan dan Jumlah Rupiah!");
-        return;
-    }
+    if (!descVal || !amountVal) return;
 
     saveTransaction();
     resetForm();
@@ -412,11 +395,9 @@ function resetForm() {
 
 function deleteItem(category, id) {
     if (!window.isAdminLoggedIn || !window.tableUnlocked[category]) return;
-    if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
-        window.store[category] = window.store[category].filter(item => item.id !== id);
-        window.safeSetStorage('kembang_store', window.store);
-        renderAll();
-    }
+    window.store[category] = window.store[category].filter(item => item.id !== id);
+    window.safeSetStorage('kembang_store', window.store);
+    renderAll();
 }
 
 function switchMainTab(tabKey) {
