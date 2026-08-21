@@ -3,9 +3,8 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkxJd6qnSUiIfa
 window.safeGetStorage = function(key, fallback) { try { var val = localStorage.getItem(key); return val ? JSON.parse(val) : fallback; } catch (e) { return fallback; } };
 window.safeSetStorage = function(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} };
 
-// Ganti username dan password di bawah ini untuk semua pengguna & HP
-window.ADMIN_USERNAME = "UsernameBaruAnda"; 
-window.ADMIN_PASSWORD = "PasswordBaruAnda"; 
+window.ADMIN_USERNAME = "Rawetjoy"; 
+window.ADMIN_PASSWORD = "kembang"; 
 
 window.isAdminLoggedIn = false;
 window.tableUnlocked = { dangdut: false, makam: false };
@@ -276,7 +275,9 @@ function changeAccountCredentials() {
     if (newUser && newPass) {
         window.ADMIN_USERNAME = newUser;
         window.ADMIN_PASSWORD = newPass;
-        alert("✅ Username & Password lokal berhasil diperbarui untuk sesi ini!");
+        window.safeSetStorage('kembang_user', newUser);
+        window.safeSetStorage('kembang_pass', newPass);
+        alert("✅ Username & Password berhasil diperbarui!");
         showTransactionForm();
     } else {
         alert("Harap isi Username dan Password baru!");
