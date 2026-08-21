@@ -667,7 +667,7 @@
                     window.store = data;
                     window.safeSetStorage('kembang_store', window.store);
                     renderAll();
-                    alert("✅ Data berhasil disinkronkan dari Google Sheet!");
+                    // Notifikasi alert sinkronisasi dihapus sesuai permintaan
                 }
             })
             .catch(err => {
@@ -1027,6 +1027,8 @@
             window.store[category] = window.store[category].filter(item => item.id !== id);
             window.safeSetStorage('kembang_store', window.store);
             renderAll();
+            // Mengirim aksi hapus ke Google Sheet agar data benar-benar terhapus di database online
+            syncToGoogleSheet('delete', { id: id, category: category });
         }
     }
 
