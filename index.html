@@ -67,10 +67,10 @@
 
         .logo-banner-outer {
             position: relative;
-            background: linear-gradient(135deg, #a3e635 0%, #4d7c0f 50%, #15803d 100%);
+            background: linear-gradient(135deg, #ffb6c1 0%, #ff69b4 50%, #c71585 100%);
             padding: 4px;
             clip-path: polygon(30px 0%, calc(100% - 30px) 0%, 100% 50%, calc(100% - 30px) 100%, 30px 100%, 0% 50%);
-            filter: drop-shadow(0 0 16px rgba(132, 204, 22, 0.75)) drop-shadow(0 6px 10px rgba(0,0,0,0.4));
+            filter: drop-shadow(0 0 16px rgba(255, 105, 180, 0.75)) drop-shadow(0 6px 10px rgba(0,0,0,0.4));
             transition: transform 0.3s ease;
         }
         .logo-banner-outer:hover {
@@ -90,7 +90,7 @@
             justify-content: center;
             gap: 16px;
             padding: 12px 40px;
-            background: radial-gradient(circle, #1a3a08 0%, #0c1c03 60%, #030801 100%);
+            background: radial-gradient(circle, #3a0820 0%, #1c0310 60%, #080104 100%);
             background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 8px);
             clip-path: polygon(26px 0%, calc(100% - 26px) 0%, 100% 50%, calc(100% - 26px) 100%, 26px 100%, 0% 50%);
         }
@@ -114,7 +114,7 @@
         }
 
         .text-bersatu {
-            background: linear-gradient(180deg, #ffffef 0%, #fef08a 25%, #a3e635 48%, #3f6212 52%, #84cc16 75%, #ecfccb 100%);
+            background: linear-gradient(180deg, #ffffff 0%, #ffb6c1 25%, #ff69b4 48%, #c71585 52%, #ff1493 75%, #ffe4e1 100%);
         }
 
         .flower-icon-box {
@@ -125,7 +125,7 @@
             width: 55px;
             height: 55px;
             margin: 0 -4px;
-            filter: drop-shadow(0px 0px 10px rgba(163, 230, 53, 0.95));
+            filter: drop-shadow(0px 0px 10px rgba(255, 105, 180, 0.95));
         }
 
         .flower-svg { width: 100%; height: 100%; }
@@ -207,6 +207,7 @@
 
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 10px; }
         .form-control { padding: 6px 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 13px; width: 100%; background: white; }
+        .form-control:disabled { background-color: #e2e8f0; color: #718096; cursor: not-allowed; }
         
         .btn-group { display: flex; gap: 8px; }
         .btn-add { background-color: #3182ce; color: white; padding: 6px 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1; font-size: 12px; }
@@ -224,6 +225,25 @@
         .tab-btn.active-makam { background-color: var(--primary-makam); color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+
+        .main-year-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .main-year-label {
+            font-size: 13px;
+            font-weight: 800;
+            color: #2b6cb0;
+            text-transform: uppercase;
+        }
 
         .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
         .card { background: var(--card-bg); padding: 11px 13px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); border: 1px solid var(--border-color); backdrop-filter: blur(2px); }
@@ -245,30 +265,6 @@
         }
         
         .table-title { font-size: 15px; font-weight: bold; color: #2b6cb0; }
-        
-        .subtitle-container {
-            display: none;
-            align-items: center;
-            gap: 6px;
-            margin-top: 4px;
-        }
-
-        .table-subtitle { 
-            font-size: 12px; 
-            font-weight: 700; 
-            color: #2b6cb0; 
-            cursor: pointer; 
-            background: #ebf8ff; 
-            border: 1px solid #90cdf4; 
-            padding: 2px 8px; 
-            border-radius: 6px; 
-            width: fit-content;
-            transition: all 0.2s;
-        }
-        .table-subtitle:hover {
-            background: #bee3f8;
-            transform: translateY(-1px);
-        }
 
         .filter-container { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .filter-group { display: flex; gap: 5px; align-items: center; }
@@ -288,6 +284,37 @@
         .btn-filter.active-in { background: #2e7d32; color: white; border-color: #2e7d32; }
         .btn-filter.active-out { background: #c62828; color: white; border-color: #c62828; }
         .btn-filter.active-year { background: #2b6cb0; color: white; border-color: #2b6cb0; }
+
+        .extra-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .search-input {
+            padding: 5px 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 12px;
+            width: 200px;
+            background: white;
+        }
+        .btn-print {
+            background-color: #4a5568;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-print:hover { background-color: #2d3748; }
 
         .table-card { background: var(--card-bg); border-radius: 8px; border: 1px solid var(--border-color); overflow-x: auto; backdrop-filter: blur(2px); }
         
@@ -350,6 +377,15 @@
         }
         .close-btn:hover { background: #e2e8f0; }
 
+        @media print {
+            body { background: white !important; padding: 0 !important; }
+            .bg-overlay, .admin-lock-icon, .admin-card, .tabs, .main-year-selector, .table-header-options, .extra-toolbar, .col-aksi { display: none !important; }
+            .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .card { border: 1px solid #ccc !important; box-shadow: none !important; }
+            table { border: 1px solid #ccc !important; }
+            th, td { border: 1px solid #ccc !important; }
+        }
+
         @media (max-width: 600px) { 
             .summary-grid { grid-template-columns: 1fr; }
             .table-header-options { flex-direction: column; align-items: flex-start; }
@@ -373,26 +409,26 @@
                         <div class="flower-icon-box">
                             <svg class="flower-svg" viewBox="0 0 100 100" fill="none">
                                 <defs>
-                                    <linearGradient id="petalGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                        <stop offset="0%" stop-color="#bef264"/>
-                                        <stop offset="40%" stop-color="#84cc16"/>
-                                        <stop offset="80%" stop-color="#3f6212"/>
-                                        <stop offset="100%" stop-color="#1a2e05"/>
-                                    </linearGradient>
-                                    <linearGradient id="goldCore" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stop-color="#fef08a"/>
-                                        <stop offset="50%" stop-color="#eab308"/>
-                                        <stop offset="100%" stop-color="#854d0e"/>
+                                    <linearGradient id="sakuraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#ffb6c1"/>
+                                        <stop offset="50%" stop-color="#ff69b4"/>
+                                        <stop offset="100%" stop-color="#c71585"/>
                                     </linearGradient>
                                 </defs>
-                                <path d="M50 50 L20 80 Q50 100 80 80 Z" fill="url(#petalGradient)" stroke="#000" stroke-width="2.5"/>
-                                <path d="M50 50 L5 60 Q-5 35 15 20 Z" fill="url(#petalGradient)" stroke="#000" stroke-width="2.5"/>
-                                <path d="M50 50 L95 60 Q105 35 85 20 Z" fill="url(#petalGradient)" stroke="#000" stroke-width="2.5"/>
-                                <path d="M50 50 L20 15 Q50 -5 80 15 Z" fill="url(#petalGradient)" stroke="#000" stroke-width="2.5"/>
-                                <path d="M50 50 L5 35 Q20 5 45 20 Z" fill="url(#petalGradient)" stroke="#000" stroke-width="2.5"/>
-                                <path d="M50 50 L95 35 Q80 5 55 20 Z" fill="url(#petalGradient)" stroke="#000" stroke-width="2.5"/>
-                                <circle cx="50" cy="42" r="13" fill="url(#goldCore)" stroke="#000" stroke-width="2.5"/>
-                                <circle cx="50" cy="42" r="6" fill="#0f172a"/>
+                                <g>
+                                    <ellipse cx="50" cy="22" rx="12" ry="20" fill="url(#sakuraGrad)" stroke="#fff" stroke-width="1.5"/>
+                                    <ellipse cx="50" cy="78" rx="12" ry="20" fill="url(#sakuraGrad)" stroke="#fff" stroke-width="1.5"/>
+                                    <ellipse cx="22" cy="50" rx="20" ry="12" fill="url(#sakuraGrad)" stroke="#fff" stroke-width="1.5"/>
+                                    <ellipse cx="78" cy="50" rx="20" ry="12" fill="url(#sakuraGrad)" stroke="#fff" stroke-width="1.5"/>
+                                </g>
+                                <g transform="rotate(45 50 50)">
+                                    <ellipse cx="50" cy="25" rx="9" ry="16" fill="#ff1493" opacity="0.6"/>
+                                    <ellipse cx="50" cy="75" rx="9" ry="16" fill="#ff1493" opacity="0.6"/>
+                                    <ellipse cx="25" cy="50" rx="16" ry="9" fill="#ff1493" opacity="0.6"/>
+                                    <ellipse cx="75" cy="50" rx="16" ry="9" fill="#ff1493" opacity="0.6"/>
+                                </g>
+                                <circle cx="50" cy="50" r="12" fill="#fff" stroke="#ff1493" stroke-width="2"/>
+                                <circle cx="50" cy="50" r="5" fill="#c71585"/>
                             </svg>
                         </div>
                         <span class="text-bersatu">BERSATU</span>
@@ -412,17 +448,6 @@
             <input type="text" id="admin-user-input" class="form-control" placeholder="Username" style="margin-bottom:8px">
             <input type="password" id="admin-pass-input" class="form-control" placeholder="Password" style="margin-bottom:15px">
             <button class="btn-add" onclick="submitLogin()">Masuk</button>
-        </div>
-    </div>
-
-    <!-- MODAL FOTO LALUNA MUSIK -->
-    <div class="modal-overlay" id="photo-modal" onclick="closePhotoModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <button class="close-btn" onclick="closePhotoModal()">✕</button>
-            <h3 style="margin-bottom: 12px; color: #2b6cb0;">🎵 Laluna Musik</h3>
-            <div style="border-radius: 8px; overflow: hidden; max-height: 400px; background: #edf2f7; display: flex; align-items: center; justify-content: center;">
-                <img id="laluna-img" src="" alt="Foto Laluna Musik" style="width: 100%; height: auto; display: block; object-fit: contain; max-height: 380px;">
-            </div>
         </div>
     </div>
 
@@ -452,11 +477,6 @@
                     <span style="font-size: 12px; font-weight: bold; color: #4a5568;">💡 Kecerahan BG:</span>
                     <input type="range" id="bg-opacity-slider" min="0.05" max="0.8" step="0.05" value="0.15" style="flex:1; cursor:pointer;" oninput="adjustBgOpacity(this.value)">
                     <span id="bg-opacity-label" style="font-size: 11px; font-weight: bold; color: #2b6cb0; width: 35px; text-align: right;">15%</span>
-                </div>
-
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="input-laluna-url" class="form-control" placeholder="URL Foto Laluna Musik (https://...)">
-                    <button onclick="changeLalunaPhoto()" class="btn-bg" style="background-color: #2b6cb0;">Simpan Foto Laluna</button>
                 </div>
             </div>
         </div>
@@ -492,9 +512,12 @@
                     <option value="dangdut">Dangdut Halal Bihalal</option>
                     <option value="makam">Listrik Makam</option>
                 </select>
-                <div>
-                    <input type="date" id="input-date" class="form-control" title="Kosongkan jika tanggal belum pasti / tidak ada">
-                    <div style="font-size: 10px; color: #718096; margin-top: 2px; font-style: italic;">*Kosongkan = strip (-)</div>
+                <select id="input-year-target" class="form-control">
+                    <option value="2026" id="opt-year-2026" disabled>Tahun 2026 (Paten)</option>
+                    <option value="2027" selected>Acara 2027</option>
+                </select>
+                <div id="input-date-wrapper">
+                    <input type="date" id="input-date" class="form-control" title="Tanggal transaksi">
                 </div>
                 <select id="input-type" class="form-control">
                     <option value="Pemasukan">Pemasukan (+)</option>
@@ -516,6 +539,13 @@
         <button class="tab-btn" id="tab-btn-makam" onclick="switchMainTab('makam')">Listrik Makam</button>
     </div>
 
+    <!-- PILIHAN TAHUN UTAMA -->
+    <div class="main-year-selector" id="main-year-selector-container">
+        <span class="main-year-label">Pilih Tahun Laporan:</span>
+        <button class="btn-filter active-year" id="filter-dangdut-2026" onclick="setYearFilter('dangdut', '2026')">2026</button>
+        <button class="btn-filter" id="filter-dangdut-2027" onclick="setYearFilter('dangdut', '2027')">Acara 2027</button>
+    </div>
+
     <!-- TAB 1: DANGDUT HALAL BIHALAL -->
     <div id="tab-dangdut" class="tab-content active">
         <div class="summary-grid">
@@ -525,26 +555,20 @@
         </div>
 
         <div class="table-header-options">
-            <div>
-                <div class="table-title" id="dangdut-table-title">📋 Data Transaksi Dangdut Halal Bihalal</div>
-                <div class="subtitle-container" id="dangdut-subtitle-container">
-                    <div class="table-subtitle" onclick="openPhotoModal()" title="Klik untuk lihat foto">🎵 Laluna Musik 🖼️</div>
-                </div>
-            </div>
+            <div class="table-title" id="dangdut-table-title">📋 Data Transaksi Dangdut Halal Bihalal</div>
             
             <div class="filter-container">
-                <div class="filter-group">
-                    <span class="filter-label">Tahun:</span>
-                    <button class="btn-filter active-year" id="filter-dangdut-2026" onclick="setYearFilter('dangdut', '2026')">2026</button>
-                    <button class="btn-filter" id="filter-dangdut-2027" onclick="setYearFilter('dangdut', '2027')">Acara 2027</button>
-                </div>
-
                 <div class="filter-group">
                     <span class="filter-label">Jenis:</span>
                     <button class="btn-filter active-in" id="filter-dangdut-in" onclick="setTypeFilter('dangdut', 'Pemasukan')">Pemasukan (+)</button>
                     <button class="btn-filter" id="filter-dangdut-out" onclick="setTypeFilter('dangdut', 'Pengeluaran')">Pengeluaran (-)</button>
                 </div>
             </div>
+        </div>
+
+        <div class="extra-toolbar">
+            <input type="text" id="search-dangdut" class="search-input" placeholder="🔍 Cari keterangan..." oninput="render('dangdut')">
+            <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
         </div>
 
         <div class="table-card">
@@ -555,7 +579,6 @@
                         <th class="col-nama">NAMA / KETERANGAN</th>
                         <th class="col-jenis">JENIS</th>
                         <th class="col-jumlah">JUMLAH</th>
-                        <th class="col-tanggal">TANGGAL</th>
                         <th class="col-aksi" style="display: none;" id="th-action-dangdut">AKSI</th>
                     </tr>
                 </thead>
@@ -581,6 +604,11 @@
                     <button class="btn-filter" id="filter-makam-out" onclick="setTypeFilter('makam', 'Pengeluaran')">Pengeluaran (-)</button>
                 </div>
             </div>
+        </div>
+
+        <div class="extra-toolbar">
+            <input type="text" id="search-makam" class="search-input" placeholder="🔍 Cari keterangan..." oninput="render('makam')">
+            <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
         </div>
 
         <div class="table-card">
@@ -621,7 +649,6 @@
     window.tableUnlocked = { dangdut: false, makam: false };
 
     window.defaultBg = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000";
-    window.defaultLalunaPhoto = "https://i.postimg.cc/W4L4L3Fb/IMG-20260820-132510-843.jpg"; 
     window.defaultFooterText = "20 Agustus 2026";
 
     window.activeFilter = {
@@ -682,27 +709,6 @@
         document.getElementById('login-modal').classList.remove('active');
     }
 
-    function openPhotoModal() {
-        var photoUrl = window.safeGetStorage('kembang_laluna_photo', window.defaultLalunaPhoto);
-        document.getElementById('laluna-img').src = photoUrl;
-        document.getElementById('photo-modal').classList.add('active');
-    }
-
-    function closePhotoModal(e) {
-        document.getElementById('photo-modal').classList.remove('active');
-    }
-
-    function changeLalunaPhoto() {
-        if (!window.isAdminLoggedIn) return;
-        var url = document.getElementById('input-laluna-url').value.trim();
-        if (url) {
-            window.safeSetStorage('kembang_laluna_photo', url);
-            alert("Foto Laluna Musik berhasil diperbarui!");
-        } else {
-            alert("Harap masukkan URL Foto!");
-        }
-    }
-
     function setYearFilter(category, year) {
         window.activeFilter[category + 'Year'] = year;
         var y26 = document.getElementById(`filter-${category}-2026`);
@@ -733,6 +739,10 @@
 
     function toggleTableLock(category) {
         if (!window.isAdminLoggedIn) return;
+        // Jika sedang berada di tahun 2026, gembok/buka gembok tidak berlaku karena data sudah paten
+        var currentYear = category === 'dangdut' ? window.activeFilter['dangdutYear'] : '2027';
+        if (currentYear === '2026') return;
+
         window.tableUnlocked[category] = !window.tableUnlocked[category];
         render(category);
     }
@@ -785,6 +795,8 @@
         document.getElementById('footer-settings-panel').style.display = 'none';
         document.getElementById('transaction-form-panel').style.display = 'block';
         document.getElementById('admin-panel-title').innerText = "📝 Input / Edit Transaksi";
+        
+        document.getElementById('input-year-target').value = "2027";
     }
 
     function toggleBgSettings() {
@@ -796,7 +808,7 @@
             document.getElementById('account-settings-panel').style.display = 'none';
             document.getElementById('footer-settings-panel').style.display = 'none';
             document.getElementById('transaction-form-panel').style.display = 'none';
-            document.getElementById('admin-panel-title').innerText = "🖼️ Pengaturan Gambar BG & Laluna";
+            document.getElementById('admin-panel-title').innerText = "🖼️ Pengaturan Gambar BG";
         }
     }
 
@@ -904,9 +916,6 @@
         document.getElementById('bg-opacity-slider').value = savedOpacity;
         document.getElementById('bg-opacity-label').innerText = Math.round(savedOpacity * 100) + "%";
 
-        var savedLaluna = window.safeGetStorage('kembang_laluna_photo', window.defaultLalunaPhoto);
-        document.getElementById('input-laluna-url').value = savedLaluna;
-
         applyFooterSettings();
     }
 
@@ -950,7 +959,15 @@
     function saveTransaction() {
         var editId = document.getElementById('edit-id').value;
         var cat = document.getElementById('input-category').value;
-        var dateVal = document.getElementById('input-date').value.trim();
+        var targetYear = "2027"; 
+        
+        var itemCheck = editId ? window.store[cat].find(i => i.id == editId) : null;
+        if (itemCheck && itemCheck.date && itemCheck.date.startsWith("2026")) {
+            targetYear = "2026"; 
+        }
+
+        var dateInputEl = document.getElementById('input-date');
+        var dateVal = cat === 'dangdut' ? (targetYear + "-01-01") : (dateInputEl ? dateInputEl.value.trim() : "");
         var descVal = document.getElementById('input-desc').value;
         var typeVal = document.getElementById('input-type').value;
         var amountVal = parseInt(document.getElementById('input-amount').value) || 0;
@@ -1001,7 +1018,16 @@
 
         document.getElementById('edit-id').value = item.id;
         document.getElementById('input-category').value = category;
-        document.getElementById('input-date').value = item.date || "";
+        
+        if (item.date && item.date.length >= 4) {
+            var yr = item.date.substring(0, 4);
+            if (yr === '2026' || yr === '2027') {
+                document.getElementById('input-year-target').value = yr;
+            }
+        }
+
+        var dateInputEl = document.getElementById('input-date');
+        if (dateInputEl) dateInputEl.value = item.date || "";
         document.getElementById('input-type').value = item.type;
         document.getElementById('input-desc').value = item.desc;
         document.getElementById('input-amount').value = item.amount;
@@ -1013,9 +1039,11 @@
 
     function resetForm() {
         document.getElementById('edit-id').value = "";
-        document.getElementById('input-date').value = "";
+        var dateInputEl = document.getElementById('input-date');
+        if (dateInputEl) dateInputEl.value = "";
         document.getElementById('input-desc').value = "";
         document.getElementById('input-amount').value = "";
+        document.getElementById('input-year-target').value = "2027";
         document.getElementById('btn-save').innerText = "➕ Simpan Data";
         document.getElementById('btn-cancel').style.display = "none";
     }
@@ -1026,7 +1054,6 @@
             window.store[category] = window.store[category].filter(item => item.id !== id);
             window.safeSetStorage('kembang_store', window.store);
             renderAll();
-            // Mengirim payload lengkap agar Google Apps Script mengenali data yang harus dihapus
             syncToGoogleSheet('delete', { id: id, category: category });
         }
     }
@@ -1036,6 +1063,13 @@
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active-dangdut', 'active-makam'));
         document.getElementById('tab-' + tabKey).classList.add('active');
         document.getElementById('tab-btn-' + tabKey).classList.add(tabKey === 'dangdut' ? 'active-dangdut' : 'active-makam');
+
+        var yearSelector = document.getElementById('main-year-selector-container');
+        if (tabKey === 'dangdut') {
+            yearSelector.style.display = 'flex';
+        } else {
+            yearSelector.style.display = 'none';
+        }
     }
 
     function renderAll() { render('dangdut'); render('makam'); }
@@ -1046,25 +1080,18 @@
         tbody.innerHTML = "";
         
         var selectedType = window.activeFilter[key + 'Type'];
-        var selectedYear = key === 'dangdut' ? window.activeFilter['dangdutYear'] : null;
+        var selectedYear = key === 'dangdut' ? window.activeFilter['dangdutYear'] : '2027';
+        var searchQuery = document.getElementById('search-' + key) ? document.getElementById('search-' + key).value.toLowerCase() : "";
 
         var thAction = document.getElementById('th-action-' + key);
         
-        if (window.isAdminLoggedIn) {
+        // Atur tampilan kolom aksi: Jika tahun 2026, kolom aksi sepenuhnya disembunyikan karena sudah paten.
+        if (window.isAdminLoggedIn && selectedYear !== '2026') {
             thAction.style.display = 'table-cell';
             var isUnlocked = window.tableUnlocked[key];
             thAction.innerHTML = `AKSI <span style="cursor:pointer; font-size:13px; margin-left:4px;" onclick="toggleTableLock('${key}')" title="${isUnlocked ? 'Klik untuk Kunci' : 'Klik untuk Buka Gembok'}">${isUnlocked ? '🔓' : '🔒'}</span>`;
         } else {
             thAction.style.display = 'none';
-        }
-
-        if (key === 'dangdut') {
-            var subtitleContainer = document.getElementById('dangdut-subtitle-container');
-            if (selectedYear === '2027') {
-                subtitleContainer.style.display = 'flex';
-            } else {
-                subtitleContainer.style.display = 'none';
-            }
         }
 
         var yearFilteredList = list;
@@ -1083,35 +1110,48 @@
             else totalOut += (parseInt(item.amount) || 0);
         });
 
-        var finalFilteredList = yearFilteredList.filter(item => item.type === selectedType);
+        var finalFilteredList = yearFilteredList.filter(item => {
+            var matchType = item.type === selectedType;
+            var matchSearch = (item.desc || "").toLowerCase().includes(searchQuery);
+            return matchType && matchSearch;
+        });
 
         if (finalFilteredList.length === 0) {
-            var colSpanCount = window.isAdminLoggedIn ? 6 : 5;
-            tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align:center; padding: 12px; color:#718096;">Tidak ada data ${selectedType}${selectedYear ? ' tahun ' + selectedYear : ''}</td></tr>`;
+            var colSpanCount = (window.isAdminLoggedIn && selectedYear !== '2026') ? (key === 'dangdut' ? 5 : 6) : (key === 'dangdut' ? 4 : 5);
+            tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align:center; padding: 12px; color:#718096;">Tidak ada data ditemukan</td></tr>`;
         } else {
             finalFilteredList.forEach((item, index) => {
-                var actionBtns = "";
                 var tdActionHtml = "";
                 
-                if (window.isAdminLoggedIn && window.tableUnlocked[key]) {
-                    actionBtns = `<div class="action-btns">
-                        <button class="btn-action btn-edit" onclick="editItem('${key}',${item.id})">✏️</button>
-                        <button class="btn-action btn-delete" onclick="deleteItem('${key}',${item.id})">🗑️</button>
-                       </div>`;
-                    tdActionHtml = `<td class="col-aksi">${actionBtns}</td>`;
-                } else if (window.isAdminLoggedIn) {
-                    tdActionHtml = `<td class="col-aksi" style="color:#718096; font-size:10px;">Terkunci 🔒</td>`;
+                if (window.isAdminLoggedIn && selectedYear !== '2026') {
+                    if (window.tableUnlocked[key]) {
+                        var actionBtns = `<div class="action-btns">
+                            <button class="btn-action btn-edit" onclick="editItem('${key}',${item.id})">✏️</button>
+                            <button class="btn-action btn-delete" onclick="deleteItem('${key}',${item.id})">🗑️</button>
+                           </div>`;
+                        tdActionHtml = `<td class="col-aksi">${actionBtns}</td>`;
+                    } else {
+                        tdActionHtml = `<td class="col-aksi" style="color:#718096; font-size:10px;">Terkunci 🔒</td>`;
+                    }
                 }
 
-                var displayDate = formatDateNumeric(item.date);
-
-                tbody.innerHTML += `<tr>
-                    <td class="col-no">${index+1}</td>
-                    <td class="col-nama">${item.desc || '-'}</td>
-                    <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type}</span></td>
-                    <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>
-                    <td class="col-tanggal">${displayDate}</td>${tdActionHtml}
-                </tr>`;
+                if (key === 'dangdut') {
+                    tbody.innerHTML += `<tr>
+                        <td class="col-no">${index+1}</td>
+                        <td class="col-nama">${item.desc || '-'}</td>
+                        <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type}</span></td>
+                        <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>${tdActionHtml}
+                    </tr>`;
+                } else {
+                    var displayDate = formatDateNumeric(item.date);
+                    tbody.innerHTML += `<tr>
+                        <td class="col-no">${index+1}</td>
+                        <td class="col-nama">${item.desc || '-'}</td>
+                        <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type}</span></td>
+                        <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>
+                        <td class="col-tanggal">${displayDate}</td>${tdActionHtml}
+                    </tr>`;
+                }
             });
         }
         
