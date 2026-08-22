@@ -732,11 +732,14 @@
         fetchDataFromSheet();
         loadDownloadFileUrl();
 
-        // Sembunyikan tombol download (📥) jika aplikasi dibuka dalam mode standalone (terinstal)
-        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        // Pengecekan apakah dibuka sebagai aplikasi terinstal (Standalone / TWA / Android App)
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        const isTwa = document.referrer.includes('android-app://');
+
+        if (isStandalone || isTwa) {
             var downloadBtn = document.getElementById('download-app-btn');
             if (downloadBtn) {
-                downloadBtn.style.display = 'none';
+                downloadBtn.style.display = 'none'; // Sembunyikan tombol download jika dibuka via aplikasi
             }
         }
     });
