@@ -732,14 +732,14 @@
         fetchDataFromSheet();
         loadDownloadFileUrl();
 
-        // Pengecekan apakah dibuka sebagai aplikasi terinstal (Standalone / TWA / Android App)
+        // Pengecekan otomatis untuk menyembunyikan tombol download jika dibuka di dalam aplikasi
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         const isTwa = document.referrer.includes('android-app://');
 
         if (isStandalone || isTwa) {
             var downloadBtn = document.getElementById('download-app-btn');
             if (downloadBtn) {
-                downloadBtn.style.display = 'none'; // Sembunyikan tombol download jika dibuka via aplikasi
+                downloadBtn.style.display = 'none'; // Tombol download disembunyikan
             }
         }
     });
