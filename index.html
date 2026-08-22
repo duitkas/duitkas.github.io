@@ -728,18 +728,30 @@
             });
     }
 
+    // Fungsi untuk mendeteksi apakah aplikasi dibuka di dalam WebView (In-App Browser)
+    function isWebView() {
+        const ua = navigator.userAgent;
+        const isInAppBrowser = /FB_IAB|FB4A|Instagram|Twitter|LinkedInApp/i.test(ua);
+        const isAndroidWV = /Android/i.test(ua) && /; wv\)/.test(ua);
+        const isIosWV = /iPhone|iPad|iPod/i.test(ua) && !/Safari/i.test(ua);
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+        return isInAppBrowser || isAndroidWV || isIosWV || isStandalone;
+    }
+
     window.addEventListener('load', function() {
         fetchDataFromSheet();
         loadDownloadFileUrl();
 
-        // Pengecekan otomatis untuk menyembunyikan tombol download jika dibuka di dalam aplikasi
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        const isTwa = document.referrer.includes('android-app://');
-
-        if (isStandalone || isTwa) {
-            var downloadBtn = document.getElementById('download-app-btn');
-            if (downloadBtn) {
-                downloadBtn.style.display = 'none'; // Tombol download disembunyikan
+        // Mengatur kemunculan tombol download berdasarkan jenis browser/aplikasi
+        const downloadBtn = document.getElementById('download-app-btn');
+        if (downloadBtn) {
+            if (isWebView()) {
+                // Jika dibuka lewat WebView / Aplikasi Terinstal, tombol disembunyikan
+                downloadBtn.style.display = 'none';
+            } else {
+                // Jika dibuka lewat browser biasa (Chrome, Safari, dll), tombol tetap dimunculkan
+                downloadBtn.style.display = 'flex';
             }
         }
     });
