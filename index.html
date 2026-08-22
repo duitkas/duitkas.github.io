@@ -508,13 +508,10 @@
         <div class="transaction-form-panel" id="transaction-form-panel">
             <input type="hidden" id="edit-id" value="">
             <div class="form-grid">
-                <select id="input-category" class="form-control">
-                    <option value="dangdut">Dangdut Halal Bihalal</option>
-                    <option value="makam">Listrik Makam</option>
-                </select>
                 <select id="input-year-target" class="form-control">
                     <option value="2026" id="opt-year-2026" disabled>Tahun 2026 (Paten)</option>
                     <option value="2027" selected>Acara 2027</option>
+                    <option value="makam">Listrik Makam</option>
                 </select>
                 <div id="input-date-wrapper">
                     <input type="date" id="input-date" class="form-control" title="Tanggal transaksi">
@@ -739,7 +736,6 @@
 
     function toggleTableLock(category) {
         if (!window.isAdminLoggedIn) return;
-        // Jika sedang berada di tahun 2026, gembok/buka gembok tidak berlaku karena data sudah paten
         var currentYear = category === 'dangdut' ? window.activeFilter['dangdutYear'] : '2027';
         if (currentYear === '2026') return;
 
@@ -958,16 +954,24 @@
 
     function saveTransaction() {
         var editId = document.getElementById('edit-id').value;
-        var cat = document.getElementById('input-category').value;
-        var targetYear = "2027"; 
+        var targetYear = document.getElementById('input-year-target').value;
         
-        var itemCheck = editId ? window.store[cat].find(i => i.id == editId) : null;
-        if (itemCheck && itemCheck.date && itemCheck.date.startsWith("2026")) {
+        var cat = (targetYear === 'makam') ? 'makam' : 'dangdut';
+
+        var itemCheck = editId ? Object.values(window.store).flat().find(i => i.id == editId) : null;
+        if (itemCheck && itemCheck.date && itemCheck.date.startsWith("2026") && cat === 'dangdut') {
             targetYear = "2026"; 
         }
 
         var dateInputEl = document.getElementById('input-date');
-        var dateVal = cat === 'dangdut' ? (targetYear + "-01-01") : (dateInputEl ? dateInputEl.value.trim() : "");
+        var dateVal;
+        
+        if (cat === 'makam') {
+            dateVal = dateInputEl ? dateInputEl.value.trim() : new Date().toISOString().split('T')[0];
+        } else {
+            dateVal = (targetYear === '2026') ? "2026-01-01" : (dateInputEl ? dateInputEl.value.trim() : "2027-01-01");
+        }
+
         var descVal = document.getElementById('input-desc').value;
         var typeVal = document.getElementById('input-type').value;
         var amountVal = parseInt(document.getElementById('input-amount').value) || 0;
@@ -982,10 +986,10 @@
         };
 
         if (editId) {
-            var itemIndex = window.store[cat].findIndex(item => item.id == editId);
-            if (itemIndex !== -1) {
-                window.store[cat][itemIndex] = transactionPayload;
+            for (let key in window.store) {
+                window.store[key] = window.store[key].filter(item => item.id != editId);
             }
+            window.store[cat].push(transactionPayload);
         } else {
             window.store[cat].push(transactionPayload);
         }
@@ -1017,9 +1021,10 @@
         if (!item) return;
 
         document.getElementById('edit-id').value = item.id;
-        document.getElementById('input-category').value = category;
         
-        if (item.date && item.date.length >= 4) {
+        if (category === 'makam') {
+            document.getElementById('input-year-target').value = 'makam';
+        } else if (item.date && item.date.length >= 4) {
             var yr = item.date.substring(0, 4);
             if (yr === '2026' || yr === '2027') {
                 document.getElementById('input-year-target').value = yr;
@@ -1085,7 +1090,6 @@
 
         var thAction = document.getElementById('th-action-' + key);
         
-        // Atur tampilan kolom aksi: Jika tahun 2026, kolom aksi sepenuhnya disembunyikan karena sudah paten.
         if (window.isAdminLoggedIn && selectedYear !== '2026') {
             thAction.style.display = 'table-cell';
             var isUnlocked = window.tableUnlocked[key];
