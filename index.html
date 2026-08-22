@@ -538,7 +538,6 @@
                     <option value="makam">Listrik Makam</option>
                 </select>
                 <div id="input-date-wrapper">
-                    <!-- Kolom Tanggal dengan placeholder 'Pilih Tanggal' yang langsung membuka kalender saat diklik -->
                     <input type="text" id="input-date" class="form-control" placeholder="Pilih Tanggal">
                 </div>
                 <select id="input-type" class="form-control">
@@ -546,7 +545,6 @@
                     <option value="Pengeluaran">Pengeluaran (-)</option>
                 </select>
                 <input type="text" id="input-desc" class="form-control" placeholder="Nama / Keterangan">
-                <!-- Input Nominal -->
                 <input type="text" id="input-amount" class="form-control" placeholder="Nominal Rp...">
             </div>
             <div class="btn-group">
@@ -657,7 +655,7 @@
     </div>
 </div>
 
-<!-- TOMBOL FLOATING DI POJOK KANAN BAWAH (DOWNLOAD APP & LOGIN) -->
+<!-- TOMBOL FLOATING DI POJOK KANAN BAWAH -->
 <div class="floating-actions-container">
     <a href="#" id="download-app-btn" class="floating-btn" target="_blank" download title="Download Aplikasi">📥</a>
     <button class="floating-btn" id="admin-lock-btn" onclick="toggleAdminMode()" title="Login">🔒</button>
@@ -703,7 +701,6 @@
     }
     window.store = window.safeGetStorage('kembang_store', window.initialStore);
 
-    // --- SETUP INTERAKTIF INPUT TANGGAL & FORMAT NOMINAL ---
     document.addEventListener("DOMContentLoaded", function() {
         const inputAmount = document.getElementById('input-amount');
         if (inputAmount) {
@@ -718,7 +715,6 @@
             });
         }
 
-        // --- SKRIP KHUSUS KOLOM TANGGAL (PILIH TANGGAL) ---
         const inputTgl = document.getElementById('input-date');
         if (inputTgl) {
             inputTgl.addEventListener('focus', function() {
@@ -1260,8 +1256,10 @@
 
         var thAction = document.getElementById('th-action-' + key);
         
+        var isDangdut2026Active = (key === 'dangdut' && selectedYear === '2026');
+
         if (window.isAdminLoggedIn) {
-            if (key === 'dangdut' && selectedYear === '2026') {
+            if (isDangdut2026Active) {
                 window.tableUnlocked[key] = false;
                 thAction.style.display = 'none';
             } else {
@@ -1296,15 +1294,13 @@
         });
 
         if (finalFilteredList.length === 0) {
-            var isDangdut2026 = (key === 'dangdut' && selectedYear === '2026');
-            var colSpanCount = window.isAdminLoggedIn && !isDangdut2026 ? (key === 'dangdut' ? 5 : 6) : (key === 'dangdut' ? 4 : 5);
+            var colSpanCount = window.isAdminLoggedIn && !isDangdut2026Active ? (key === 'dangdut' ? 5 : 6) : (key === 'dangdut' ? 4 : 5);
             tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align:center; padding: 12px; color:#718096;">Tidak ada data ditemukan</td></tr>`;
         } else {
             finalFilteredList.forEach((item, index) => {
                 var tdActionHtml = "";
-                var isDangdut2026Item = (key === 'dangdut' && selectedYear === '2026');
 
-                if (window.isAdminLoggedIn && !isDangdut2026Item) {
+                if (window.isAdminLoggedIn && !isDangdut2026Active) {
                     if (window.tableUnlocked[key]) {
                         var actionBtns = `<div class="action-btns">
                             <button class="btn-action btn-edit" onclick="editItem('${key}',${item.id})">✏️</button>
@@ -1321,7 +1317,7 @@
                         <td class="col-no">${index+1}</td>
                         <td class="col-nama">${item.desc || '-'}</td>
                         <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type}</span></td>
-                        <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>${!isDangdut2026Item && window.isAdminLoggedIn ? tdActionHtml : ''}
+                        <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>${!isDangdut2026Active && window.isAdminLoggedIn ? tdActionHtml : ''}
                     </tr>`;
                 } else {
                     var displayDate = formatDateNumeric(item.date);
