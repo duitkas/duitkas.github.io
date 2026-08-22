@@ -728,8 +728,14 @@
             });
     }
 
-    // Fungsi untuk mendeteksi apakah aplikasi dibuka di dalam WebView (In-App Browser)
+    // Fungsi untuk mendeteksi apakah aplikasi dibuka di dalam WebView atau parameter khusus aplikasi
     function isWebView() {
+        // Cek parameter URL ?app=true (opsional jika Anda menyetel URL WebView dengan tambahan parameter ini)
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('app') === 'true') {
+            return true;
+        }
+
         const ua = navigator.userAgent;
         const isInAppBrowser = /FB_IAB|FB4A|Instagram|Twitter|LinkedInApp/i.test(ua);
         const isAndroidWV = /Android/i.test(ua) && /; wv\)/.test(ua);
@@ -743,14 +749,14 @@
         fetchDataFromSheet();
         loadDownloadFileUrl();
 
-        // Mengatur kemunculan tombol download berdasarkan jenis browser/aplikasi
+        // Mengatur kemunculan tombol download berdasarkan deteksi WebView / Aplikasi
         const downloadBtn = document.getElementById('download-app-btn');
         if (downloadBtn) {
             if (isWebView()) {
-                // Jika dibuka lewat WebView / Aplikasi Terinstal, tombol disembunyikan
+                // Jika dibuka lewat Aplikasi / WebView, tombol download disembunyikan
                 downloadBtn.style.display = 'none';
             } else {
-                // Jika dibuka lewat browser biasa (Chrome, Safari, dll), tombol tetap dimunculkan
+                // Jika dibuka lewat browser biasa, tombol download tetap dimunculkan
                 downloadBtn.style.display = 'flex';
             }
         }
