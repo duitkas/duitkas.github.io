@@ -538,15 +538,16 @@
                     <option value="makam">Listrik Makam</option>
                 </select>
                 <div id="input-date-wrapper">
-                    <input type="date" id="input-date" class="form-control" title="Tanggal transaksi (Opsional, kosongkan jika tidak ingin mengisi tanggal)">
+                    <!-- Kolom Tanggal dengan placeholder 'Pilih Tanggal' yang langsung membuka kalender saat diklik -->
+                    <input type="text" id="input-date" class="form-control" placeholder="Pilih Tanggal">
                 </div>
                 <select id="input-type" class="form-control">
                     <option value="Pemasukan">Pemasukan (+)</option>
                     <option value="Pengeluaran">Pengeluaran (-)</option>
                 </select>
                 <input type="text" id="input-desc" class="form-control" placeholder="Nama / Keterangan">
-                <!-- Input Nominal dengan type="text" agar format titik berjalan lancar di HP -->
-                <input type="text" id="input-amount" class="form-control" placeholder="Jumlah (Rp)">
+                <!-- Input Nominal -->
+                <input type="text" id="input-amount" class="form-control" placeholder="Nominal Rp...">
             </div>
             <div class="btn-group">
                 <button onclick="handleFormSubmit(event)" class="btn-add" id="btn-save">➕ Simpan Data</button>
@@ -702,13 +703,11 @@
     }
     window.store = window.safeGetStorage('kembang_store', window.initialStore);
 
-    // --- FITUR FORMAT TITIK OTOMATIS PADA INPUT NOMINAL ---
+    // --- SETUP INTERAKTIF INPUT TANGGAL & FORMAT NOMINAL ---
     document.addEventListener("DOMContentLoaded", function() {
         const inputAmount = document.getElementById('input-amount');
         if (inputAmount) {
-            // Ubah tipe menjadi text agar format titik rapi di HP
             inputAmount.type = "text";
-            
             inputAmount.addEventListener('input', function (e) {
                 let value = this.value.replace(/[^0-9]/g, '');
                 let formatted = '';
@@ -716,6 +715,23 @@
                     formatted = parseInt(value, 10).toLocaleString('id-ID');
                 }
                 this.value = formatted;
+            });
+        }
+
+        // --- SKRIP KHUSUS KOLOM TANGGAL (PILIH TANGGAL) ---
+        const inputTgl = document.getElementById('input-date');
+        if (inputTgl) {
+            inputTgl.addEventListener('focus', function() {
+                this.type = 'date';
+                if (typeof this.showPicker === 'function') {
+                    this.showPicker();
+                }
+            });
+
+            inputTgl.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.type = 'text';
+                }
             });
         }
     });
@@ -830,7 +846,6 @@
             document.getElementById('login-modal').classList.add('active'); 
         } else { 
             var descVal = document.getElementById('input-desc').value.trim();
-            // Membersihkan titik pada nominal saat disimpan otomatis
             var amountValStr = document.getElementById('input-amount').value.replace(/\./g, '');
             var amountVal = parseInt(amountValStr) || 0;
             
@@ -877,8 +892,6 @@
         document.getElementById('app-url-settings-panel').style.display = 'none';
         document.getElementById('transaction-form-panel').style.display = 'block';
         document.getElementById('admin-panel-title').innerText = "📝 Input / Edit Transaksi";
-        
-        document.getElementById('input-year-target').value = "2027";
     }
 
     function toggleBgSettings() {
@@ -1097,12 +1110,14 @@
         }
 
         var dateInputEl = document.getElementById('input-date');
-        var dateVal = dateInputEl ? dateInputEl.value.trim() : "";
+        var dateVal = "";
+        if (dateInputEl && dateInputEl.type === 'date' && dateInputEl.value) {
+            dateVal = dateInputEl.value.trim();
+        }
 
         var descVal = document.getElementById('input-desc').value;
         var typeVal = document.getElementById('input-type').value;
         
-        // Membersihkan titik pada input nominal agar tersimpan sebagai angka murni
         var rawAmountStr = document.getElementById('input-amount').value.replace(/\./g, '');
         var amountVal = parseInt(rawAmountStr) || 0;
 
@@ -1169,11 +1184,17 @@
         }
 
         var dateInputEl = document.getElementById('input-date');
-        if (dateInputEl) dateInputEl.value = item.date || "";
+        if (dateInputEl) {
+            if (item.date) {
+                dateInputEl.type = 'date';
+                dateInputEl.value = item.date;
+            } else {
+                dateInputEl.type = 'text';
+                dateInputEl.value = "";
+            }
+        }
         document.getElementById('input-type').value = item.type;
         document.getElementById('input-desc').value = item.desc;
-        
-        // Memunculkan kembali nominal dengan format titik otomatis saat diedit
         document.getElementById('input-amount').value = item.amount ? parseInt(item.amount, 10).toLocaleString('id-ID') : "";
 
         document.getElementById('btn-save').innerText = "💾 Perbarui Data";
@@ -1184,10 +1205,13 @@
     function resetForm() {
         document.getElementById('edit-id').value = "";
         var dateInputEl = document.getElementById('input-date');
-        if (dateInputEl) dateInputEl.value = "";
+        if (dateInputEl) {
+            dateInputEl.type = 'text';
+            dateInputEl.value = ""; 
+        }
         document.getElementById('input-desc').value = "";
         document.getElementById('input-amount').value = "";
-        document.getElementById('input-year-target').value = "2027";
+
         document.getElementById('btn-save').innerText = "➕ Simpan Data";
         document.getElementById('btn-cancel').style.display = "none";
     }
