@@ -160,7 +160,6 @@
             border-radius: 8px;
         }
 
-        /* Floating Action Buttons Container di Pojok Kanan Bawah */
         .floating-actions-container {
             position: fixed;
             bottom: 20px;
@@ -539,14 +538,15 @@
                     <option value="makam">Listrik Makam</option>
                 </select>
                 <div id="input-date-wrapper">
-                    <input type="date" id="input-date" class="form-control" title="Tanggal transaksi">
+                    <input type="date" id="input-date" class="form-control" title="Tanggal transaksi (Opsional, kosongkan jika tidak ingin mengisi tanggal)">
                 </div>
                 <select id="input-type" class="form-control">
                     <option value="Pemasukan">Pemasukan (+)</option>
                     <option value="Pengeluaran">Pengeluaran (-)</option>
                 </select>
                 <input type="text" id="input-desc" class="form-control" placeholder="Nama / Keterangan">
-                <input type="number" id="input-amount" class="form-control" placeholder="Jumlah (Rp)">
+                <!-- Input Nominal dengan type="text" agar format titik berjalan lancar di HP -->
+                <input type="text" id="input-amount" class="form-control" placeholder="Jumlah (Rp)">
             </div>
             <div class="btn-group">
                 <button onclick="handleFormSubmit(event)" class="btn-add" id="btn-save">➕ Simpan Data</button>
@@ -702,6 +702,24 @@
     }
     window.store = window.safeGetStorage('kembang_store', window.initialStore);
 
+    // --- FITUR FORMAT TITIK OTOMATIS PADA INPUT NOMINAL ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputAmount = document.getElementById('input-amount');
+        if (inputAmount) {
+            // Ubah tipe menjadi text agar format titik rapi di HP
+            inputAmount.type = "text";
+            
+            inputAmount.addEventListener('input', function (e) {
+                let value = this.value.replace(/[^0-9]/g, '');
+                let formatted = '';
+                if (value.length > 0) {
+                    formatted = parseInt(value, 10).toLocaleString('id-ID');
+                }
+                this.value = formatted;
+            });
+        }
+    });
+
     function syncToGoogleSheet(actionType, payload) {
         if (!APPS_SCRIPT_URL) return;
         fetch(APPS_SCRIPT_URL, {
@@ -728,9 +746,7 @@
             });
     }
 
-    // Fungsi untuk mendeteksi apakah aplikasi dibuka di dalam WebView atau parameter khusus aplikasi
     function isWebView() {
-        // Cek parameter URL ?app=true (opsional jika Anda menyetel URL WebView dengan tambahan parameter ini)
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('app') === 'true') {
             return true;
@@ -749,14 +765,11 @@
         fetchDataFromSheet();
         loadDownloadFileUrl();
 
-        // Mengatur kemunculan tombol download berdasarkan deteksi WebView / Aplikasi
         const downloadBtn = document.getElementById('download-app-btn');
         if (downloadBtn) {
             if (isWebView()) {
-                // Jika dibuka lewat Aplikasi / WebView, tombol download disembunyikan
                 downloadBtn.style.display = 'none';
             } else {
-                // Jika dibuka lewat browser biasa, tombol download tetap dimunculkan
                 downloadBtn.style.display = 'flex';
             }
         }
@@ -817,7 +830,9 @@
             document.getElementById('login-modal').classList.add('active'); 
         } else { 
             var descVal = document.getElementById('input-desc').value.trim();
-            var amountVal = parseInt(document.getElementById('input-amount').value) || 0;
+            // Membersihkan titik pada nominal saat disimpan otomatis
+            var amountValStr = document.getElementById('input-amount').value.replace(/\./g, '');
+            var amountVal = parseInt(amountValStr) || 0;
             
             if (descVal && amountVal) { saveTransaction(); }
 
@@ -1083,14 +1098,13 @@
 
         var dateInputEl = document.getElementById('input-date');
         var dateVal = dateInputEl ? dateInputEl.value.trim() : "";
-        
-        if (!dateVal) {
-            dateVal = "2027-04-01";
-        }
 
         var descVal = document.getElementById('input-desc').value;
         var typeVal = document.getElementById('input-type').value;
-        var amountVal = parseInt(document.getElementById('input-amount').value) || 0;
+        
+        // Membersihkan titik pada input nominal agar tersimpan sebagai angka murni
+        var rawAmountStr = document.getElementById('input-amount').value.replace(/\./g, '');
+        var amountVal = parseInt(rawAmountStr) || 0;
 
         var transactionPayload = {
             id: editId ? parseInt(editId) : Date.now(),
@@ -1117,7 +1131,8 @@
     function handleFormSubmit(e) {
         if (e) e.preventDefault();
         var descVal = document.getElementById('input-desc').value;
-        var amountVal = parseInt(document.getElementById('input-amount').value) || 0;
+        var rawAmountStr = document.getElementById('input-amount').value.replace(/\./g, '');
+        var amountVal = parseInt(rawAmountStr) || 0;
 
         if (!descVal || !amountVal) {
             alert("Harap isi Keterangan dan Jumlah Rupiah!");
@@ -1157,7 +1172,9 @@
         if (dateInputEl) dateInputEl.value = item.date || "";
         document.getElementById('input-type').value = item.type;
         document.getElementById('input-desc').value = item.desc;
-        document.getElementById('input-amount').value = item.amount;
+        
+        // Memunculkan kembali nominal dengan format titik otomatis saat diedit
+        document.getElementById('input-amount').value = item.amount ? parseInt(item.amount, 10).toLocaleString('id-ID') : "";
 
         document.getElementById('btn-save').innerText = "💾 Perbarui Data";
         document.getElementById('btn-cancel').style.display = "block";
