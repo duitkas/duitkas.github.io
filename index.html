@@ -657,7 +657,7 @@
 
 <!-- TOMBOL FLOATING DI POJOK KANAN BAWAH -->
 <div class="floating-actions-container">
-    <a href="#" id="download-app-btn" class="floating-btn" target="_blank" download title="Download Aplikasi">📥</a>
+    <a href="#" id="download-app-btn" class="floating-btn" download title="Download Aplikasi">📥</a>
     <button class="floating-btn" id="admin-lock-btn" onclick="toggleAdminMode()" title="Login">🔒</button>
 </div>
 
@@ -783,6 +783,33 @@
                 downloadBtn.style.display = 'none';
             } else {
                 downloadBtn.style.display = 'flex';
+                
+                // Event click manual agar mendownload file APK langsung tanpa mengunduh halaman HTML
+                downloadBtn.addEventListener('click', function(e) {
+                    let downloadUrl = window.safeGetStorage('kembang_download_url', window.defaultDownloadUrl);
+                    if (downloadUrl && downloadUrl !== "#") {
+                        e.preventDefault();
+                        
+                        alert("Sedang menyiapkan file untuk di-download...");
+
+                        fetch(downloadUrl)
+                            .then(response => response.blob())
+                            .then(blob => {
+                                let blobUrl = window.URL.createObjectURL(blob);
+                                let a = document.createElement('a');
+                                a.href = blobUrl;
+                                a.download = "KembangBersatu.apk";
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+                                window.URL.revokeObjectURL(blobUrl);
+                            })
+                            .catch(err => {
+                                console.error("Download error:", err);
+                                window.open(downloadUrl, '_blank');
+                            });
+                    }
+                });
             }
         }
     });
