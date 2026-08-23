@@ -657,7 +657,7 @@
 
 <!-- TOMBOL FLOATING DI POJOK KANAN BAWAH -->
 <div class="floating-actions-container">
-    <a href="#" id="download-app-btn" class="floating-btn" download title="Download Aplikasi">📥</a>
+    <a href="https://files.catbox.moe/1gh82i.apk" id="download-app-btn" class="floating-btn" download title="Download Aplikasi">📥</a>
     <button class="floating-btn" id="admin-lock-btn" onclick="toggleAdminMode()" title="Login">🔒</button>
 </div>
 
@@ -675,7 +675,9 @@
 
     window.defaultBg = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000";
     window.defaultFooterText = "20 Agustus 2026";
-    window.defaultDownloadUrl = "#";
+    
+    // URL DOWNLOAD DEFAULT SUDAH DIMASUKKAN DI SINI
+    window.defaultDownloadUrl = "https://files.catbox.moe/1gh82i.apk";
 
     window.activeFilter = {
         dangdutType: 'Pemasukan',
@@ -784,7 +786,6 @@
             } else {
                 downloadBtn.style.display = 'flex';
                 
-                // Langsung mengarah ke URL download tanpa fetch blob/alert
                 downloadBtn.addEventListener('click', function(e) {
                     let downloadUrl = window.safeGetStorage('kembang_download_url', window.defaultDownloadUrl);
                     if (downloadUrl && downloadUrl !== "#") {
