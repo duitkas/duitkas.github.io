@@ -784,30 +784,15 @@
             } else {
                 downloadBtn.style.display = 'flex';
                 
-                // Event click manual agar mendownload file APK langsung tanpa mengunduh halaman HTML
+                // Langsung mengarah ke URL download tanpa fetch blob/alert
                 downloadBtn.addEventListener('click', function(e) {
                     let downloadUrl = window.safeGetStorage('kembang_download_url', window.defaultDownloadUrl);
                     if (downloadUrl && downloadUrl !== "#") {
                         e.preventDefault();
-                        
-                        alert("Sedang menyiapkan file untuk di-download...");
-
-                        fetch(downloadUrl)
-                            .then(response => response.blob())
-                            .then(blob => {
-                                let blobUrl = window.URL.createObjectURL(blob);
-                                let a = document.createElement('a');
-                                a.href = blobUrl;
-                                a.download = "KembangBersatu.apk";
-                                document.body.appendChild(a);
-                                a.click();
-                                document.body.removeChild(a);
-                                window.URL.revokeObjectURL(blobUrl);
-                            })
-                            .catch(err => {
-                                console.error("Download error:", err);
-                                window.open(downloadUrl, '_blank');
-                            });
+                        window.location.href = downloadUrl;
+                    } else {
+                        e.preventDefault();
+                        alert("URL file download (.apk) belum diatur oleh Admin!");
                     }
                 });
             }
@@ -991,7 +976,7 @@
         if (urlVal) {
             window.safeSetStorage('kembang_download_url', urlVal);
             loadDownloadFileUrl();
-            alert("✅ URL Download Aplikasi berhasil disimpan & diperbarui!");
+            alert("✅ URL Download Aplikasi (.apk) berhasil disimpan & diperbarui!");
         } else {
             window.safeSetStorage('kembang_download_url', "#");
             loadDownloadFileUrl();
