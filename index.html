@@ -213,7 +213,7 @@
         }
         .btn-icon-bg:hover { background: #e2e8f0; }
 
-        .bg-settings-panel, .account-settings-panel, .footer-settings-panel, .app-url-settings-panel { display: none; }
+        .bg-settings-panel, .account-settings-panel, .app-url-settings-panel { display: none; }
         .transaction-form-panel { display: block; }
 
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 10px; }
@@ -390,7 +390,7 @@
 
         @media print {
             body { background: white !important; padding: 0 !important; }
-            .bg-overlay, .floating-actions-container, .admin-card, .tabs, .main-year-selector, .table-header-options, .extra-toolbar, .col-aksi { display: none !important; }
+            .bg-overlay, .floating-actions-container, .admin-card, .tabs, .main-year-selector, .table-header-options, .extra-toolbar, .col-aksi, .footer-update-info { display: none !important; }
             .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
             .card { border: 1px solid #ccc !important; box-shadow: none !important; }
             table { border: 1px solid #ccc !important; }
@@ -470,7 +470,6 @@
                 <button class="btn-icon-bg" onclick="showTransactionForm()" title="Input / Edit Transaksi">📝</button>
                 <button class="btn-icon-bg" onclick="toggleBgSettings()" title="Pengaturan Gambar Background">🖼️</button>
                 <button class="btn-icon-bg" onclick="toggleAccountSettings()" title="Ganti Username & Password">👤</button>
-                <button class="btn-icon-bg" onclick="toggleFooterSettings()" title="Pengaturan Tanggal Update Footer">📅</button>
                 <button class="btn-icon-bg" onclick="toggleAppUrlSettings()" title="Pengaturan URL Download Aplikasi">📥</button>
                 <button class="btn-icon-bg" onclick="fetchDataFromSheet()" title="Sinkronkan/Tarik Data dari Sheet">🔄</button>
             </div>
@@ -502,26 +501,12 @@
             </div>
         </div>
 
-        <!-- PANEL PENGATURAN FOOTER UPDATE -->
-        <div class="footer-settings-panel" id="footer-settings-panel">
-            <div style="display: flex; flex-direction: column; gap: 8px; background: white; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e0;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 12px; font-weight: bold; color: #4a5568;">Tampilkan Tanggal Update di Bawah:</span>
-                    <button id="btn-toggle-footer-status" onclick="toggleFooterActive()" class="btn-bg" style="padding: 4px 12px; font-size: 11px;">Aktif</button>
-                </div>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    <input type="text" id="input-footer-text" class="form-control" placeholder="Teks Keterangan (Contoh: Update Terakhir: ...)">
-                    <button onclick="saveFooterText()" class="btn-bg" style="background-color: #2b6cb0;">Simpan Teks</button>
-                </div>
-            </div>
-        </div>
-
         <!-- PANEL PENGATURAN URL DOWNLOAD APLIKASI -->
         <div class="app-url-settings-panel" id="app-url-settings-panel">
             <div style="display: flex; flex-direction: column; gap: 8px; background: white; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e0;">
                 <span style="font-size: 12px; font-weight: bold; color: #4a5568;">Pengaturan URL Link Download / File Aplikasi:</span>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    <input type="text" id="input-download-file-url" class="form-control" placeholder="Masukkan URL download file (.apk / link web / manifest, https://...)">
+                    <input type="text" id="input-download-file-url" class="form-control" placeholder="Masukkan URL download file (.apk / link web, https://...)">
                     <button onclick="saveDownloadFileUrl()" class="btn-bg" style="background-color: #2b6cb0;">Simpan URL</button>
                 </div>
                 <span style="font-size: 11px; color: #718096;">*Tombol ikon download (📥) di pojok kanan bawah akan langsung mendownload atau mengarah ke URL ini saat diklik.</span>
@@ -541,8 +526,8 @@
                     <input type="text" id="input-date" class="form-control" placeholder="Pilih Tanggal">
                 </div>
                 <select id="input-type" class="form-control">
-                    <option value="Pemasukan">Pemasukan (+)</option>
-                    <option value="Pengeluaran">Pengeluaran (-)</option>
+                    <option value="Pemasukan">Dana Masuk (+)</option>
+                    <option value="Pengeluaran">Dana Keluar (-)</option>
                 </select>
                 <input type="text" id="input-desc" class="form-control" placeholder="Nama / Keterangan">
                 <input type="text" id="input-amount" class="form-control" placeholder="Nominal Rp...">
@@ -576,13 +561,13 @@
         </div>
 
         <div class="table-header-options">
-            <div class="table-title" id="dangdut-table-title">📋 Data Transaksi Dangdut Halal Bihalal</div>
+            <div class="table-title" id="dangdut-table-title">📋 Data Transaksi Dangdut Halal Bihalal 2026</div>
             
             <div class="filter-container">
                 <div class="filter-group">
                     <span class="filter-label">Jenis:</span>
-                    <button class="btn-filter active-in" id="filter-dangdut-in" onclick="setTypeFilter('dangdut', 'Pemasukan')">Pemasukan (+)</button>
-                    <button class="btn-filter" id="filter-dangdut-out" onclick="setTypeFilter('dangdut', 'Pengeluaran')">Pengeluaran (-)</button>
+                    <button class="btn-filter active-in" id="filter-dangdut-in" onclick="setTypeFilter('dangdut', 'Pemasukan')">Dana Masuk (+)</button>
+                    <button class="btn-filter" id="filter-dangdut-out" onclick="setTypeFilter('dangdut', 'Pengeluaran')">Dana Keluar (-)</button>
                 </div>
             </div>
         </div>
@@ -621,8 +606,8 @@
             <div class="filter-container">
                 <div class="filter-group">
                     <span class="filter-label">Jenis:</span>
-                    <button class="btn-filter active-in" id="filter-makam-in" onclick="setTypeFilter('makam', 'Pemasukan')">Pemasukan (+)</button>
-                    <button class="btn-filter" id="filter-makam-out" onclick="setTypeFilter('makam', 'Pengeluaran')">Pengeluaran (-)</button>
+                    <button class="btn-filter active-in" id="filter-makam-in" onclick="setTypeFilter('makam', 'Pemasukan')">Dana Masuk (+)</button>
+                    <button class="btn-filter" id="filter-makam-out" onclick="setTypeFilter('makam', 'Pengeluaran')">Dana Keluar (-)</button>
                 </div>
             </div>
         </div>
@@ -674,9 +659,6 @@
     window.tableUnlocked = { dangdut: false, makam: false };
 
     window.defaultBg = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000";
-    window.defaultFooterText = "20 Agustus 2026";
-    
-    // URL DOWNLOAD DEFAULT SUDAH DIMASUKKAN DI SINI
     window.defaultDownloadUrl = "https://files.catbox.moe/1gh82i.apk";
 
     window.activeFilter = {
@@ -886,7 +868,6 @@
             document.getElementById('input-new-user').value = window.ADMIN_USERNAME;
             document.getElementById('input-new-pass').value = window.ADMIN_PASSWORD;
 
-            loadFooterSettingsUI();
             loadAppUrlSettingsUI();
             renderAll(); 
         } else {
@@ -897,7 +878,6 @@
     function showTransactionForm() {
         document.getElementById('bg-settings-panel').style.display = 'none';
         document.getElementById('account-settings-panel').style.display = 'none';
-        document.getElementById('footer-settings-panel').style.display = 'none';
         document.getElementById('app-url-settings-panel').style.display = 'none';
         document.getElementById('transaction-form-panel').style.display = 'block';
         document.getElementById('admin-panel-title').innerText = "📝 Input / Edit Transaksi";
@@ -910,7 +890,6 @@
         } else {
             document.getElementById('bg-settings-panel').style.display = 'block';
             document.getElementById('account-settings-panel').style.display = 'none';
-            document.getElementById('footer-settings-panel').style.display = 'none';
             document.getElementById('app-url-settings-panel').style.display = 'none';
             document.getElementById('transaction-form-panel').style.display = 'none';
             document.getElementById('admin-panel-title').innerText = "🖼️ Pengaturan Gambar BG";
@@ -924,24 +903,9 @@
         } else {
             document.getElementById('account-settings-panel').style.display = 'block';
             document.getElementById('bg-settings-panel').style.display = 'none';
-            document.getElementById('footer-settings-panel').style.display = 'none';
             document.getElementById('app-url-settings-panel').style.display = 'none';
             document.getElementById('transaction-form-panel').style.display = 'none';
             document.getElementById('admin-panel-title').innerText = "👤 Ganti Username & Password";
-        }
-    }
-
-    function toggleFooterSettings() {
-        var footerPanel = document.getElementById('footer-settings-panel');
-        if (footerPanel.style.display === 'block') {
-            showTransactionForm();
-        } else {
-            document.getElementById('footer-settings-panel').style.display = 'block';
-            document.getElementById('bg-settings-panel').style.display = 'none';
-            document.getElementById('account-settings-panel').style.display = 'none';
-            document.getElementById('app-url-settings-panel').style.display = 'none';
-            document.getElementById('transaction-form-panel').style.display = 'none';
-            document.getElementById('admin-panel-title').innerText = "📅 Pengaturan Tanggal Footer";
         }
     }
 
@@ -953,17 +917,9 @@
             document.getElementById('app-url-settings-panel').style.display = 'block';
             document.getElementById('bg-settings-panel').style.display = 'none';
             document.getElementById('account-settings-panel').style.display = 'none';
-            document.getElementById('footer-settings-panel').style.display = 'none';
             document.getElementById('transaction-form-panel').style.display = 'none';
             document.getElementById('admin-panel-title').innerText = "📥 Pengaturan URL Download Aplikasi";
         }
-    }
-
-    function loadFooterSettingsUI() {
-        var isVisible = window.safeGetStorage('kembang_footer_active', true);
-        var footerText = window.safeGetStorage('kembang_footer_text', window.defaultFooterText);
-        document.getElementById('input-footer-text').value = footerText;
-        updateFooterToggleButton(isVisible);
     }
 
     function loadAppUrlSettingsUI() {
@@ -993,50 +949,6 @@
         }
     }
 
-    function toggleFooterActive() {
-        var currentStatus = window.safeGetStorage('kembang_footer_active', true);
-        var newStatus = !currentStatus;
-        window.safeSetStorage('kembang_footer_active', newStatus);
-        updateFooterToggleButton(newStatus);
-        applyFooterSettings();
-    }
-
-    function updateFooterToggleButton(isActive) {
-        var btn = document.getElementById('btn-toggle-footer-status');
-        if (isActive) {
-            btn.innerText = "Aktif";
-            btn.style.backgroundColor = "#48bb78";
-        } else {
-            btn.innerText = "Nonaktif";
-            btn.style.backgroundColor = "#e53e3e";
-        }
-    }
-
-    function saveFooterText() {
-        if (!window.isAdminLoggedIn) return;
-        var textVal = document.getElementById('input-footer-text').value.trim();
-        if (textVal) {
-            window.safeSetStorage('kembang_footer_text', textVal);
-            applyFooterSettings();
-            alert("✅ Teks footer berhasil disimpan!");
-        } else {
-            alert("Harap isi teks footer!");
-        }
-    }
-
-    function applyFooterSettings() {
-        var isVisible = window.safeGetStorage('kembang_footer_active', true);
-        var footerText = window.safeGetStorage('kembang_footer_text', window.defaultFooterText);
-        var footerEl = document.getElementById('footer-update-info');
-        
-        document.getElementById('footer-date-text').innerText = footerText;
-        if (isVisible) {
-            footerEl.style.display = 'block';
-        } else {
-            footerEl.style.display = 'none';
-        }
-    }
-
     function changeAccountCredentials() {
         if (!window.isAdminLoggedIn) return;
         var newUser = document.getElementById('input-new-user').value.trim();
@@ -1063,8 +975,6 @@
         document.getElementById('bg-overlay').style.opacity = savedOpacity;
         document.getElementById('bg-opacity-slider').value = savedOpacity;
         document.getElementById('bg-opacity-label').innerText = Math.round(savedOpacity * 100) + "%";
-
-        applyFooterSettings();
     }
 
     function changeBackground() {
@@ -1254,6 +1164,7 @@
         } else {
             yearSelector.style.display = 'none';
         }
+        render(tabKey);
     }
 
     function renderAll() { render('dangdut'); render('makam'); }
@@ -1270,6 +1181,27 @@
         var thAction = document.getElementById('th-action-' + key);
         
         var isDangdut2026Active = (key === 'dangdut' && selectedYear === '2026');
+
+        // Otomatis ubah judul tabel bawah sesuai tahun yang dipilih pada tab Dangdut
+        if (key === 'dangdut') {
+            var tableTitleEl = document.getElementById('dangdut-table-title');
+            if (tableTitleEl) {
+                if (selectedYear === '2026') {
+                    tableTitleEl.innerText = "📋 Data Transaksi Dangdut Halal Bihalal 2026";
+                } else if (selectedYear === '2027') {
+                    tableTitleEl.innerText = "📋 Data Transaksi Dangdut Halal Bihalal Acara 2027";
+                }
+            }
+        }
+
+        var footerEl = document.getElementById('footer-update-info');
+        if (footerEl) {
+            if (key === 'dangdut' && selectedYear === '2026') {
+                footerEl.style.display = 'none';
+            } else {
+                footerEl.style.display = 'block';
+            }
+        }
 
         if (window.isAdminLoggedIn) {
             if (isDangdut2026Active) {
@@ -1329,7 +1261,7 @@
                     tbody.innerHTML += `<tr>
                         <td class="col-no">${index+1}</td>
                         <td class="col-nama">${item.desc || '-'}</td>
-                        <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type}</span></td>
+                        <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type === 'Pemasukan' ? 'Dana Masuk' : 'Dana Keluar'}</span></td>
                         <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>${!isDangdut2026Active && window.isAdminLoggedIn ? tdActionHtml : ''}
                     </tr>`;
                 } else {
@@ -1337,7 +1269,7 @@
                     tbody.innerHTML += `<tr>
                         <td class="col-no">${index+1}</td>
                         <td class="col-nama">${item.desc || '-'}</td>
-                        <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type}</span></td>
+                        <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type === 'Pemasukan' ? 'Dana Masuk' : 'Dana Keluar'}</span></td>
                         <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>
                         <td class="col-tanggal">${displayDate}</td>${window.isAdminLoggedIn ? tdActionHtml : ''}
                     </tr>`;
