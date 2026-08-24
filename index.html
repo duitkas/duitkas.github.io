@@ -1182,7 +1182,6 @@
         
         var isDangdut2026Active = (key === 'dangdut' && selectedYear === '2026');
 
-        // Otomatis ubah judul tabel bawah sesuai tahun yang dipilih pada tab Dangdut
         if (key === 'dangdut') {
             var tableTitleEl = document.getElementById('dangdut-table-title');
             if (tableTitleEl) {
@@ -1196,6 +1195,7 @@
 
         var footerEl = document.getElementById('footer-update-info');
         if (footerEl) {
+            // Sembunyikan footer update terakhir jika tab aktif adalah Dangdut dan tahun 2026 yang dipilih
             if (key === 'dangdut' && selectedYear === '2026') {
                 footerEl.style.display = 'none';
             } else {
