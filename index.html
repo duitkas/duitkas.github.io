@@ -789,6 +789,20 @@
         document.getElementById('login-modal').classList.remove('active');
     }
 
+    function updateFooterVisibility() {
+        var footerEl = document.getElementById('footer-update-info');
+        var activeTab = document.querySelector('.tab-content.active').id;
+        var currentYear = window.activeFilter.dangdutYear;
+
+        if (footerEl) {
+            if (activeTab === 'tab-dangdut' && currentYear === '2026') {
+                footerEl.style.display = 'none';
+            } else {
+                footerEl.style.display = 'block';
+            }
+        }
+    }
+
     function setYearFilter(category, year) {
         window.activeFilter[category + 'Year'] = year;
         var y26 = document.getElementById(`filter-${category}-2026`);
@@ -801,6 +815,7 @@
             if (year === '2027') y27.classList.add('active-year');
         }
         render(category);
+        updateFooterVisibility();
     }
 
     function setTypeFilter(category, type) {
@@ -1168,9 +1183,14 @@
             yearSelector.style.display = 'none';
         }
         render(tabKey);
+        updateFooterVisibility();
     }
 
-    function renderAll() { render('dangdut'); render('makam'); }
+    function renderAll() { 
+        render('dangdut'); 
+        render('makam'); 
+        updateFooterVisibility();
+    }
 
     function render(key) {
         var list = window.store[key] || [];
@@ -1192,16 +1212,6 @@
                 } else if (selectedYear === '2027') {
                     tableTitleEl.innerText = "📋 Data Transaksi Dangdut Halal Bihalal Acara 2027";
                 }
-            }
-        }
-
-        // Sembunyikan footer tanggal update jika opsi tahun 2026 yang aktif
-        var footerEl = document.getElementById('footer-update-info');
-        if (footerEl) {
-            if (key === 'dangdut' && selectedYear === '2026') {
-                footerEl.style.display = 'none';
-            } else {
-                footerEl.style.display = 'block';
             }
         }
 
