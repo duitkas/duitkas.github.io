@@ -662,7 +662,7 @@
 
     window.activeFilter = {
         dangdutType: 'Pemasukan',
-        dangdutYear: '2027', // Default langsung ke 2027 saat login admin
+        dangdutYear: '2027',
         makamType: 'Pemasukan'
     };
 
@@ -875,7 +875,6 @@
             document.getElementById('admin-lock-btn').innerText = '🔒';
             document.getElementById('admin-lock-btn').title = "Login";
             
-            // Kembalikan filter ke 2026 saat keluar dari mode admin agar pengunjung umum tetap bisa melihat arsip 2026
             setYearFilter('dangdut', '2026');
 
             resetForm();
@@ -904,7 +903,6 @@
                 targetSelect.value = '2027'; 
             }
 
-            // Saat login admin, otomatis alihkan tampilan laporan ke tahun 2027 dan sembunyikan opsi 2026
             setYearFilter('dangdut', '2027');
 
             loadAppUrlSettingsUI();
@@ -1135,9 +1133,7 @@
         } else if (item.date && item.date.length >= 4) {
             var yr = item.date.substring(0, 4);
             if (yr === '2026') {
-                alert("Data tahun 2026 bersifat arsip dan tidak dapat diubah melalui admin.");
-                showTransactionForm();
-                return;
+                targetSelect.value = yr;
             } else if (yr === '2027') {
                 targetSelect.value = yr;
             }
@@ -1178,12 +1174,6 @@
 
     function deleteItem(category, id) {
         if (!window.isAdminLoggedIn || !window.tableUnlocked[category]) return;
-
-        var item = window.store[category].find(i => i.id === id);
-        if (item && item.date && item.date.startsWith('2026')) {
-            alert("Data tahun 2026 bersifat arsip dan tidak dapat dihapus.");
-            return;
-        }
 
         if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
             window.store[category] = window.store[category].filter(item => item.id !== id);
@@ -1280,17 +1270,12 @@
                 var tdActionHtml = "";
 
                 if (window.isAdminLoggedIn) {
-                    var isItem2026 = item.date && item.date.startsWith('2026') && key === 'dangdut';
                     if (window.tableUnlocked[key]) {
-                        if (isItem2026) {
-                            tdActionHtml = `<td class="col-aksi" style="color:#718096; font-size:10px;">Arsip 2026</td>`;
-                        } else {
-                            var actionBtns = `<div class="action-btns">
-                                <button class="btn-action btn-edit" onclick="editItem('${key}',${item.id})">✏️</button>
-                                <button class="btn-action btn-delete" onclick="deleteItem('${key}',${item.id})">🗑️</button>
-                               </div>`;
-                            tdActionHtml = `<td class="col-aksi">${actionBtns}</td>`;
-                        }
+                        var actionBtns = `<div class="action-btns">
+                            <button class="btn-action btn-edit" onclick="editItem('${key}',${item.id})">✏️</button>
+                            <button class="btn-action btn-delete" onclick="deleteItem('${key}',${item.id})">🗑️</button>
+                           </div>`;
+                        tdActionHtml = `<td class="col-aksi">${actionBtns}</td>`;
                     } else {
                         tdActionHtml = `<td class="col-aksi" style="color:#718096; font-size:10px;">Terkunci 🔒</td>`;
                     }
