@@ -727,18 +727,19 @@
     }
 
     function fetchDataFromSheet() {
-        if (!APPS_SCRIPT_URL) return;
-        fetch(APPS_SCRIPT_URL + "?action=get")
+        if (!APPS_SCRIPT_URL) return Promise.resolve();
+        return fetch(APPS_SCRIPT_URL + "?action=get")
             .then(res => res.json())
             .then(data => {
-                if (data && (data.dangdut || data.makam)) {
+                // Hanya update dari sheet jika server benar-benar mengembalikan data yang valid/tidak kosong
+                if (data && (Array.isArray(data.dangdut) || Array.isArray(data.makam))) {
                     window.store = data;
                     window.safeSetStorage('kembang_store', window.store);
                     renderAll();
                 }
             })
             .catch(err => {
-                console.error("Gagal mengambil data:", err);
+                console.error("Gagal mengambil data, menggunakan data lokal:", err);
             });
     }
 
@@ -758,8 +759,12 @@
     }
 
     window.addEventListener('load', function() {
-        fetchDataFromSheet();
+        loadBackground();
         loadDownloadFileUrl();
+        renderAll(); // Tampilkan data lokal terlebih dahulu agar responsif
+
+        // Tarik data dari sheet di latar belakang
+        fetchDataFromSheet();
 
         const downloadBtn = document.getElementById('download-app-btn');
         if (downloadBtn) {
@@ -1195,7 +1200,6 @@
 
         var footerEl = document.getElementById('footer-update-info');
         if (footerEl) {
-            // Sembunyikan footer update terakhir jika tab aktif adalah Dangdut dan tahun 2026 yang dipilih
             if (key === 'dangdut' && selectedYear === '2026') {
                 footerEl.style.display = 'none';
             } else {
@@ -1281,9 +1285,6 @@
         document.getElementById(key + '-total-out').innerText = formatRupiah(totalOut);
         document.getElementById(key + '-balance').innerText = formatRupiah(totalIn - totalOut);
     }
-
-    loadBackground();
-    renderAll();
 </script>
 
 </body>
