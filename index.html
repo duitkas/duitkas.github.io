@@ -518,8 +518,8 @@
             <input type="hidden" id="edit-id" value="">
             <div class="form-grid">
                 <select id="input-year-target" class="form-control" onchange="handleYearTargetChange(this.value)">
-                    <option value="2026" disabled style="color: #a0aec0; background: #edf2f7;">Tahun 2026 (Dinonaktifkan)</option>
-                    <option value="2027" selected>Acara 2027</option>
+                    <option value="2026" id="opt-target-2026">Acara 2026</option>
+                    <option value="2027" id="opt-target-2027">Acara 2027</option>
                     <option value="makam">Listrik Makam</option>
                 </select>
                 <div id="input-date-wrapper">
@@ -635,7 +635,7 @@
     </div>
 
     <!-- FOOTER UPDATE INFO -->
-    <div class="footer-update-info" id="footer-update-info">
+    <div class="footer-update-info" id="footer-update-info" style="display: none;">
         📅 Update Terakhir: <span id="footer-date-text">20 Agustus 2026</span>
     </div>
 </div>
@@ -791,15 +791,8 @@
 
     function updateFooterVisibility() {
         var footerEl = document.getElementById('footer-update-info');
-        var activeTab = document.querySelector('.tab-content.active').id;
-        var currentYear = window.activeFilter.dangdutYear;
-
         if (footerEl) {
-            if (activeTab === 'tab-dangdut' && currentYear === '2026') {
-                footerEl.style.display = 'none';
-            } else {
-                footerEl.style.display = 'block';
-            }
+            footerEl.style.display = 'none'; // Selalu disembunyikan/dihilangkan secara permanen
         }
     }
 
@@ -814,6 +807,12 @@
             if (year === '2026') y26.classList.add('active-year');
             if (year === '2027') y27.classList.add('active-year');
         }
+
+        var targetSelect = document.getElementById('input-year-target');
+        if (targetSelect && targetSelect.value !== 'makam') {
+            targetSelect.value = year;
+        }
+
         render(category);
         updateFooterVisibility();
     }
@@ -832,21 +831,15 @@
         render(category);
     }
 
-    function handleYearTargetChange(val) {
-        if (val === '2026') {
-            alert("Opsi Tahun 2026 dinonaktifkan!");
-            document.getElementById('input-year-target').value = '2027';
-        }
-    }
+    function handleYearTargetChange(val) {}
 
     function toggleTableLock(category) {
         if (!window.isAdminLoggedIn) return;
-        
+        // Jika tab dangdut aktif dan tahun 2026 yang dipilih, jangan biarkan gembok dibuka (paten terkunci)
         if (category === 'dangdut' && window.activeFilter.dangdutYear === '2026') {
-            window.tableUnlocked[category] = false;
-        } else {
-            window.tableUnlocked[category] = !window.tableUnlocked[category];
+            return;
         }
+        window.tableUnlocked[category] = !window.tableUnlocked[category];
         render(category);
     }
 
@@ -885,6 +878,14 @@
             
             document.getElementById('input-new-user').value = window.ADMIN_USERNAME;
             document.getElementById('input-new-pass').value = window.ADMIN_PASSWORD;
+
+            var activeTab = document.querySelector('.tab-content.active').id;
+            var targetSelect = document.getElementById('input-year-target');
+            if (activeTab === 'tab-makam') {
+                targetSelect.value = 'makam';
+            } else {
+                targetSelect.value = window.activeFilter.dangdutYear;
+            }
 
             loadAppUrlSettingsUI();
             renderAll(); 
@@ -1035,11 +1036,6 @@
     function saveTransaction() {
         var editId = document.getElementById('edit-id').value;
         var targetOption = document.getElementById('input-year-target').value; 
-        
-        if (targetOption === '2026') {
-            alert("Data tahun 2026 tidak dapat diubah/ditambahkan!");
-            return;
-        }
 
         var cat = 'dangdut';
         if (targetOption === 'makam') {
@@ -1050,6 +1046,13 @@
         var dateVal = "";
         if (dateInputEl && dateInputEl.type === 'date' && dateInputEl.value) {
             dateVal = dateInputEl.value.trim();
+        } else {
+            var currentMonthDay = "01-01";
+            if (targetOption === '2026' || targetOption === '2027') {
+                dateVal = targetOption + "-" + currentMonthDay;
+            } else {
+                dateVal = "2026-08-01";
+            }
         }
 
         var descVal = document.getElementById('input-desc').value;
@@ -1098,25 +1101,22 @@
 
     function editItem(category, id) {
         if (!window.isAdminLoggedIn || !window.tableUnlocked[category]) return;
+        if (category === 'dangdut' && window.activeFilter.dangdutYear === '2026') return;
         
         var item = window.store[category].find(i => i.id === id);
         if (!item) return;
-
-        if (category === 'dangdut' && item.date && item.date.startsWith('2026')) {
-            alert("Data tahun 2026 tidak dapat diedit!");
-            return;
-        }
 
         showTransactionForm();
 
         document.getElementById('edit-id').value = item.id;
         
+        var targetSelect = document.getElementById('input-year-target');
         if (category === 'makam') {
-            document.getElementById('input-year-target').value = 'makam';
+            targetSelect.value = 'makam';
         } else if (item.date && item.date.length >= 4) {
             var yr = item.date.substring(0, 4);
-            if (yr === '2027') {
-                document.getElementById('input-year-target').value = yr;
+            if (yr === '2026' || yr === '2027') {
+                targetSelect.value = yr;
             }
         }
 
@@ -1155,12 +1155,7 @@
 
     function deleteItem(category, id) {
         if (!window.isAdminLoggedIn || !window.tableUnlocked[category]) return;
-        
-        var item = window.store[category].find(i => i.id === id);
-        if (category === 'dangdut' && item && item.date && item.date.startsWith('2026')) {
-            alert("Data tahun 2026 tidak dapat dihapus!");
-            return;
-        }
+        if (category === 'dangdut' && window.activeFilter.dangdutYear === '2026') return;
 
         if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
             window.store[category] = window.store[category].filter(item => item.id !== id);
@@ -1177,10 +1172,14 @@
         document.getElementById('tab-btn-' + tabKey).classList.add(tabKey === 'dangdut' ? 'active-dangdut' : 'active-makam');
 
         var yearSelector = document.getElementById('main-year-selector-container');
+        var targetSelect = document.getElementById('input-year-target');
+
         if (tabKey === 'dangdut') {
             yearSelector.style.display = 'flex';
+            if (targetSelect) targetSelect.value = window.activeFilter.dangdutYear;
         } else {
             yearSelector.style.display = 'none';
+            if (targetSelect) targetSelect.value = 'makam';
         }
         render(tabKey);
         updateFooterVisibility();
@@ -1215,15 +1214,11 @@
             }
         }
 
-        if (window.isAdminLoggedIn) {
-            if (isDangdut2026Active) {
-                window.tableUnlocked[key] = false;
-                thAction.style.display = 'none';
-            } else {
-                thAction.style.display = 'table-cell';
-                var isUnlocked = window.tableUnlocked[key];
-                thAction.innerHTML = `AKSI <span style="cursor:pointer; font-size:13px; margin-left:4px;" onclick="toggleTableLock('${key}')" title="${isUnlocked ? 'Klik untuk Kunci' : 'Klik untuk Buka Gembok'}">${isUnlocked ? '🔓' : '🔒'}</span>`;
-            }
+        // Jika tab Dangdut 2026 yang dibuka, kolom AKSI disembunyikan sepenuhnya (paten kunci)
+        if (window.isAdminLoggedIn && !isDangdut2026Active) {
+            thAction.style.display = 'table-cell';
+            var isUnlocked = window.tableUnlocked[key];
+            thAction.innerHTML = `AKSI <span style="cursor:pointer; font-size:13px; margin-left:4px;" onclick="toggleTableLock('${key}')" title="${isUnlocked ? 'Klik untuk Kunci' : 'Klik untuk Buka Gembok'}">${isUnlocked ? '🔓' : '🔒'}</span>`;
         } else {
             thAction.style.display = 'none';
         }
@@ -1251,7 +1246,7 @@
         });
 
         if (finalFilteredList.length === 0) {
-            var colSpanCount = window.isAdminLoggedIn && !isDangdut2026Active ? (key === 'dangdut' ? 5 : 6) : (key === 'dangdut' ? 4 : 5);
+            var colSpanCount = (window.isAdminLoggedIn && !isDangdut2026Active) ? (key === 'dangdut' ? 5 : 6) : (key === 'dangdut' ? 4 : 5);
             tbody.innerHTML = `<tr><td colspan="${colSpanCount}" style="text-align:center; padding: 12px; color:#718096;">Tidak ada data ditemukan</td></tr>`;
         } else {
             finalFilteredList.forEach((item, index) => {
@@ -1274,7 +1269,7 @@
                         <td class="col-no">${index+1}</td>
                         <td class="col-nama">${item.desc || '-'}</td>
                         <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type === 'Pemasukan' ? 'Dana Masuk' : 'Dana Keluar'}</span></td>
-                        <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>${!isDangdut2026Active && window.isAdminLoggedIn ? tdActionHtml : ''}
+                        <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>${(window.isAdminLoggedIn && !isDangdut2026Active) ? tdActionHtml : ''}
                     </tr>`;
                 } else {
                     var displayDate = formatDateNumeric(item.date);
@@ -1283,7 +1278,7 @@
                         <td class="col-nama">${item.desc || '-'}</td>
                         <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type === 'Pemasukan' ? 'Dana Masuk' : 'Dana Keluar'}</span></td>
                         <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>
-                        <td class="col-tanggal">${displayDate}</td>${window.isAdminLoggedIn ? tdActionHtml : ''}
+                        <td class="col-tanggal">${displayDate}</td>${(window.isAdminLoggedIn && !isDangdut2026Active) ? tdActionHtml : ''}
                     </tr>`;
                 }
             });
