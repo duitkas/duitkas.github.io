@@ -635,7 +635,7 @@
 
     <!-- FOOTER UPDATE INFO -->
     <div class="footer-update-info" id="footer-update-info" style="display: block;">
-        📅 Update Terakhir: <span id="footer-date-text">24 Agustus 2026</span>
+        📅 Update Terakhir: <span id="footer-date-text">-</span>
     </div>
 </div>
 
@@ -684,7 +684,38 @@
     }
     window.store = window.safeGetStorage('kembang_store', window.initialStore);
 
+    // Fungsi untuk memperbarui tampilan tanggal update terakhir
+    function updateFooterDate(dateString) {
+        var footerDateEl = document.getElementById('footer-date-text');
+        if (!footerDateEl) return;
+
+        let formattedDate = "";
+        if (dateString) {
+            let d = new Date(dateString);
+            if (!isNaN(d.getTime())) {
+                let options = { day: 'numeric', month: 'long', year: 'numeric' };
+                formattedDate = d.toLocaleDateString('id-ID', options);
+            } else {
+                formattedDate = dateString;
+            }
+        } else {
+            let options = { day: 'numeric', month: 'long', year: 'numeric' };
+            formattedDate = new Date().toLocaleDateString('id-ID', options);
+        }
+
+        footerDateEl.innerText = formattedDate;
+        window.safeSetStorage('kembang_last_update', formattedDate);
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
+        // Muat tanggal terakhir dari storage atau set hari ini
+        let savedDate = window.safeGetStorage('kembang_last_update', null);
+        if (savedDate) {
+            document.getElementById('footer-date-text').innerText = savedDate;
+        } else {
+            updateFooterDate();
+        }
+
         const inputAmount = document.getElementById('input-amount');
         if (inputAmount) {
             inputAmount.type = "text";
@@ -733,6 +764,7 @@
                 if (data && (Array.isArray(data.dangdut) || Array.isArray(data.makam))) {
                     window.store = data;
                     window.safeSetStorage('kembang_store', window.store);
+                    updateFooterDate(); // Perbarui tanggal update saat sinkronisasi sukses
                     renderAll();
                 }
             })
@@ -1098,6 +1130,7 @@
         }
 
         window.safeSetStorage('kembang_store', window.store);
+        updateFooterDate(); // Otomatis perbarui tanggal update terakhir saat data disimpan
         syncToGoogleSheet('add', transactionPayload);
     }
 
@@ -1178,6 +1211,7 @@
         if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
             window.store[category] = window.store[category].filter(item => item.id !== id);
             window.safeSetStorage('kembang_store', window.store);
+            updateFooterDate(); // Otomatis perbarui tanggal update terakhir saat data dihapus
             renderAll();
             syncToGoogleSheet('delete', { id: id, category: category });
         }
