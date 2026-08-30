@@ -684,36 +684,27 @@
     }
     window.store = window.safeGetStorage('kembang_store', window.initialStore);
 
-    // Fungsi untuk memperbarui tampilan tanggal update terakhir
-    function updateFooterDate(dateString) {
-        var footerDateEl = document.getElementById('footer-date-text');
-        if (!footerDateEl) return;
-
-        let formattedDate = "";
-        if (dateString) {
-            let d = new Date(dateString);
-            if (!isNaN(d.getTime())) {
-                let options = { day: 'numeric', month: 'long', year: 'numeric' };
-                formattedDate = d.toLocaleDateString('id-ID', options);
-            } else {
-                formattedDate = dateString;
-            }
-        } else {
-            let options = { day: 'numeric', month: 'long', year: 'numeric' };
-            formattedDate = new Date().toLocaleDateString('id-ID', options);
+    // Fungsi untuk memperbarui tampilan tanggal update terakhir saat admin menyimpan/mengunci data
+    function updateFooterDate() {
+        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+        const nowStr = new Date().toLocaleDateString('id-ID', options);
+        
+        // Simpan ke storage agar tetap konsisten dan tidak berubah otomatis sebelum disimpan admin
+        window.safeSetStorage('kembang_last_update', nowStr);
+        
+        const footerDateEl = document.getElementById('footer-date-text');
+        if (footerDateEl) {
+            footerDateEl.innerText = nowStr;
         }
-
-        footerDateEl.innerText = formattedDate;
-        window.safeSetStorage('kembang_last_update', formattedDate);
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        // Muat tanggal terakhir dari storage atau set hari ini
+        // Muat tanggal terakhir dari storage, jika belum pernah diset/disimpan tampilkan '-'
         let savedDate = window.safeGetStorage('kembang_last_update', null);
         if (savedDate) {
             document.getElementById('footer-date-text').innerText = savedDate;
         } else {
-            updateFooterDate();
+            document.getElementById('footer-date-text').innerText = "-";
         }
 
         const inputAmount = document.getElementById('input-amount');
@@ -764,7 +755,6 @@
                 if (data && (Array.isArray(data.dangdut) || Array.isArray(data.makam))) {
                     window.store = data;
                     window.safeSetStorage('kembang_store', window.store);
-                    updateFooterDate(); // Perbarui tanggal update saat sinkronisasi sukses
                     renderAll();
                 }
             })
@@ -897,6 +887,9 @@
             var amountVal = parseInt(amountValStr) || 0;
             
             if (descVal && amountVal) { saveTransaction(); }
+
+            // TANGGAL DIPERBARUI HANYA SAAT ADMIN MENYIMPAN & MENUTUP MODE ADMIN
+            updateFooterDate();
 
             alert("💾 Data berhasil dikunci & disimpan!");
             window.isAdminLoggedIn = false; 
@@ -1130,7 +1123,6 @@
         }
 
         window.safeSetStorage('kembang_store', window.store);
-        updateFooterDate(); // Otomatis perbarui tanggal update terakhir saat data disimpan
         syncToGoogleSheet('add', transactionPayload);
     }
 
@@ -1211,7 +1203,6 @@
         if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
             window.store[category] = window.store[category].filter(item => item.id !== id);
             window.safeSetStorage('kembang_store', window.store);
-            updateFooterDate(); // Otomatis perbarui tanggal update terakhir saat data dihapus
             renderAll();
             syncToGoogleSheet('delete', { id: id, category: category });
         }
