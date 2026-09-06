@@ -712,7 +712,8 @@
         if (savedDate) {
             document.getElementById('footer-date-text').innerText = savedDate;
         } else {
-            updateFooterDate();
+            // Mencegah update otomatis saat load pertama kali tanpa riwayat sebelumnya
+            document.getElementById('footer-date-text').innerText = "-";
         }
 
         const inputAmount = document.getElementById('input-amount');
@@ -763,7 +764,7 @@
                 if (data && (Array.isArray(data.dangdut) || Array.isArray(data.makam))) {
                     window.store = data;
                     window.safeSetStorage('kembang_store', window.store);
-                    updateFooterDate(); 
+                    // updateFooterDate(); <-- Pembaruan otomatis dinonaktifkan di sini
                     renderAll();
                 }
             })
@@ -900,7 +901,7 @@
             // OTOMATIS PERBARUI TANGGAL UPDATE TERAKHIR SAAT MENYIMPAN/MENUTUP SESI ADMIN
             updateFooterDate();
 
-            alert("💾 Data berhasil dikunci & disimpan!");
+            alert("💾 Data berhasil dikunci, disimpan & Tanggal Update diperbarui!");
             window.isAdminLoggedIn = false; 
             window.tableUnlocked.dangdut = false;
             window.tableUnlocked.makam = false;
@@ -1132,7 +1133,7 @@
         }
 
         window.safeSetStorage('kembang_store', window.store);
-        updateFooterDate(); 
+        // updateFooterDate(); <-- Pembaruan otomatis dinonaktifkan di sini
         syncToGoogleSheet('add', transactionPayload);
     }
 
@@ -1213,7 +1214,7 @@
         if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
             window.store[category] = window.store[category].filter(item => item.id !== id);
             window.safeSetStorage('kembang_store', window.store);
-            updateFooterDate(); 
+            // updateFooterDate(); <-- Pembaruan otomatis dinonaktifkan di sini
             renderAll();
             syncToGoogleSheet('delete', { id: id, category: category });
         }
