@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KEMBANG BERSATU - Laporan Keuangan</title>
-    <!-- Dinamis PWA Manifest Link -->
     <link id="dynamic-manifest" rel="manifest" href="manifest.json">
     <style>
         :root {
@@ -676,7 +675,8 @@
         makam: [
             { id: 1, date: "2026-08-01", desc: "Iuran Warga Agustus", type: "Pemasukan", amount: 500000 },
             { id: 2, date: "2026-08-05", desc: "Beli Token Listrik", type: "Pengeluaran", amount: 150000 }
-        ]
+        ],
+        lastUpdate: "-"
     };
 
     if (!localStorage.getItem('kembang_store')) {
@@ -684,7 +684,6 @@
     }
     window.store = window.safeGetStorage('kembang_store', window.initialStore);
 
-    // Fungsi untuk memperbarui tampilan tanggal update terakhir
     function updateFooterDate(dateString) {
         var footerDateEl = document.getElementById('footer-date-text');
         if (!footerDateEl) return;
@@ -704,15 +703,34 @@
         }
 
         footerDateEl.innerText = formattedDate;
-        window.safeSetStorage('kembang_last_update', formattedDate);
+        window.store.lastUpdate = formattedDate;
+
+        // SISTEM BARIS TERSEMBUNYI UNTUK SYNC KE SHEET
+        if (window.isAdminLoggedIn) {
+            var metaPayload = {
+                id: 999999999,
+                category: 'makam',
+                date: formattedDate,
+                desc: "SYSTEM_LAST_UPDATE",
+                type: "Metadata",
+                amount: 0
+            };
+            
+            if (!window.store.makam) window.store.makam = [];
+            window.store.makam = window.store.makam.filter(i => i.id !== 999999999 && i.type !== "Metadata");
+            window.store.makam.push(metaPayload);
+            
+            syncToGoogleSheet('add', metaPayload);
+        }
+
+        window.safeSetStorage('kembang_store', window.store);
     }
 
     document.addEventListener("DOMContentLoaded", function() {
-        let savedDate = window.safeGetStorage('kembang_last_update', null);
-        if (savedDate) {
+        let savedDate = window.store.lastUpdate;
+        if (savedDate && savedDate !== "-") {
             document.getElementById('footer-date-text').innerText = savedDate;
         } else {
-            // Mencegah update otomatis saat load pertama kali tanpa riwayat sebelumnya
             document.getElementById('footer-date-text').innerText = "-";
         }
 
@@ -762,9 +780,30 @@
             .then(res => res.json())
             .then(data => {
                 if (data && (Array.isArray(data.dangdut) || Array.isArray(data.makam))) {
+                    
+                    let allData = [...(data.dangdut || []), ...(data.makam || [])];
+                    let metaRecords = allData.filter(i => i.id === 999999999 || i.type === "Metadata");
+                    let metaDate = "-";
+                    
+                    if (metaRecords.length > 0) {
+                        metaDate = metaRecords[metaRecords.length - 1].date; // Ambil baris tersembunyi yang paling baru
+                    } else if (window.store.lastUpdate) {
+                        metaDate = window.store.lastUpdate; 
+                    }
+
                     window.store = data;
+                    window.store.lastUpdate = metaDate;
+                    
+                    // Hilangkan baris tersembunyi agar tidak pernah dirender di tabel
+                    if(window.store.dangdut) window.store.dangdut = window.store.dangdut.filter(i => i.id !== 999999999 && i.type !== "Metadata");
+                    if(window.store.makam) window.store.makam = window.store.makam.filter(i => i.id !== 999999999 && i.type !== "Metadata");
+
                     window.safeSetStorage('kembang_store', window.store);
-                    // updateFooterDate(); <-- Pembaruan otomatis dinonaktifkan di sini
+                    
+                    if (window.store.lastUpdate && window.store.lastUpdate !== "-") {
+                        document.getElementById('footer-date-text').innerText = window.store.lastUpdate;
+                    }
+                    
                     renderAll();
                 }
             })
@@ -1133,7 +1172,6 @@
         }
 
         window.safeSetStorage('kembang_store', window.store);
-        // updateFooterDate(); <-- Pembaruan otomatis dinonaktifkan di sini
         syncToGoogleSheet('add', transactionPayload);
     }
 
@@ -1214,7 +1252,6 @@
         if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
             window.store[category] = window.store[category].filter(item => item.id !== id);
             window.safeSetStorage('kembang_store', window.store);
-            // updateFooterDate(); <-- Pembaruan otomatis dinonaktifkan di sini
             renderAll();
             syncToGoogleSheet('delete', { id: id, category: category });
         }
@@ -1248,7 +1285,11 @@
     }
 
     function render(key) {
-        var list = window.store[key] || [];
+        var rawList = window.store[key] || [];
+        
+        // Pemfilteran tambahan untuk memblokir baris tersembunyi agar tidak pernah masuk kalkulasi dan tabel
+        var list = rawList.filter(item => item.id !== 999999999 && item.type !== "Metadata");
+
         var tbody = document.getElementById(key + '-tbody');
         tbody.innerHTML = "";
         
