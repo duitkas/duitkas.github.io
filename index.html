@@ -387,6 +387,16 @@
         }
         .close-btn:hover { background: #e2e8f0; }
 
+        .lock-btn-toggle {
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            transition: transform 0.1s ease;
+        }
+        .lock-btn-toggle:active {
+            transform: scale(1.2);
+        }
+
         @media print {
             body { background: white !important; padding: 0 !important; }
             .bg-overlay, .floating-actions-container, .admin-card, .tabs, .main-year-selector, .table-header-options, .extra-toolbar, .col-aksi, .footer-update-info { display: none !important; }
@@ -454,7 +464,7 @@
     <div class="modal-overlay" id="login-modal">
         <div class="modal-content">
             <button class="close-btn" onclick="closeLoginModal()">✕</button>
-            <h3 style="margin-bottom: 15px;">🔒 Login</h3>
+            <h3 style="margin-bottom: 15px;">🔒 Login Admin</h3>
             <input type="text" id="admin-user-input" class="form-control" placeholder="Username" style="margin-bottom:8px">
             <input type="password" id="admin-pass-input" class="form-control" placeholder="Password" style="margin-bottom:15px">
             <button class="btn-add" onclick="submitLogin()">Masuk</button>
@@ -517,8 +527,7 @@
             <input type="hidden" id="edit-id" value="">
             <div class="form-grid">
                 <select id="input-year-target" class="form-control" onchange="handleYearTargetChange(this.value)">
-                    <option value="2026">2026</option>
-                    <option value="2027" id="opt-target-2027">Acara 2027</option>
+                    <option value="2027" id="opt-target-2027" selected>Acara 2027</option>
                     <option value="makam">Listrik Makam</option>
                 </select>
                 <div id="input-date-wrapper">
@@ -544,11 +553,11 @@
         <button class="tab-btn" id="tab-btn-makam" onclick="switchMainTab('makam')">Listrik Makam</button>
     </div>
 
-    <!-- PILIHAN TAHUN UTAMA -->
+    <!-- PILIHAN TAHUN UTAMA (DEFAULT ACARA 2027) -->
     <div class="main-year-selector" id="main-year-selector-container">
-        <span class="main-year-label">Pilih Tahun Laporan:</span>
-        <button class="btn-filter active-year" id="filter-dangdut-2026" onclick="setYearFilter('dangdut', '2026')">2026</button>
-        <button class="btn-filter" id="filter-dangdut-2027" onclick="setYearFilter('dangdut', '2027')">Acara 2027</button>
+        <span class="main-year-label">Laporan Tahun:</span>
+        <button class="btn-filter" id="filter-dangdut-2026" onclick="setYearFilter('dangdut', '2026')">2026</button>
+        <button class="btn-filter active-year" id="filter-dangdut-2027" onclick="setYearFilter('dangdut', '2027')">Acara 2027</button>
     </div>
 
     <!-- TAB 1: DANGDUT HALAL BIHALAL -->
@@ -560,7 +569,7 @@
         </div>
 
         <div class="table-header-options">
-            <div class="table-title" id="dangdut-table-title">📋 Data Transaksi Dangdut Halal Bihalal 2026</div>
+            <div class="table-title" id="dangdut-table-title">📋 Data Transaksi Dangdut Halal Bihalal Acara 2027</div>
             
             <div class="filter-container">
                 <div class="filter-group">
@@ -613,7 +622,7 @@
 
         <div class="extra-toolbar">
             <input type="text" id="search-makam" class="search-input" placeholder="🔍 Cari keterangan..." oninput="render('makam')">
-            <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+            <button class="btn-print" onclick="window.print()">🖨 Cetak / Simpan PDF</button>
         </div>
 
         <div class="table-card">
@@ -660,13 +669,13 @@
     window.defaultBg = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000";
     window.defaultDownloadUrl = "https://files.catbox.moe/1gh82i.apk";
 
+    // SET DEFAULT DANGDUT TAHUN TERAMBIL: 2027
     window.activeFilter = {
         dangdutType: 'Pemasukan',
-        dangdutYear: '2026',
+        dangdutYear: '2027',
         makamType: 'Pemasukan'
     };
 
-    // DATA TERBARU 2026 YANG SUDAH DISESUAIKAN
     window.initialStore = {
         dangdut: [
             { id: 1, date: "2026-01-01", desc: "Keseluruhan Dana Masuk", type: "Pemasukan", amount: 45427000 },
@@ -681,7 +690,6 @@
         lastUpdate: "-"
     };
 
-    // MERESET / UPDATE STORAGE LOKAL SUPAYA MENGGUNAKAN DATA BARU
     window.store = window.initialStore;
     window.safeSetStorage('kembang_store', window.store);
 
@@ -863,21 +871,7 @@
     function updateFooterVisibility() {
         var footerEl = document.getElementById('footer-update-info');
         if (footerEl) {
-            var activeTab = document.querySelector('.tab-content.active').id;
-            var currentYear = window.activeFilter['dangdutYear'];
-            
-            if (activeTab === 'tab-dangdut' && currentYear === '2026') {
-                footerEl.style.display = 'block';
-            } else {
-                footerEl.style.display = 'block';
-            }
-        }
-    }
-
-    function updateYearSelectorVisibility() {
-        var btn2026 = document.getElementById('filter-dangdut-2026');
-        if (btn2026) {
-            btn2026.style.display = 'inline-block';
+            footerEl.style.display = 'block';
         }
     }
 
@@ -886,17 +880,11 @@
         var y26 = document.getElementById(`filter-${category}-2026`);
         var y27 = document.getElementById(`filter-${category}-2027`);
 
-        if (y26 && y27) {
-            y26.className = 'btn-filter';
-            y27.className = 'btn-filter';
-            if (year === '2026') y26.classList.add('active-year');
-            if (year === '2027') y27.classList.add('active-year');
-        }
+        if (y26) y26.className = 'btn-filter';
+        if (y27) y27.className = 'btn-filter';
 
-        var targetSelect = document.getElementById('input-year-target');
-        if (targetSelect && targetSelect.value !== 'makam') {
-            targetSelect.value = year; 
-        }
+        if (year === '2026' && y26) y26.className = 'btn-filter active-year';
+        if (year === '2027' && y27) y27.className = 'btn-filter active-year';
 
         render(category);
         updateFooterVisibility();
@@ -953,6 +941,10 @@
     function submitLogin() { 
         if(document.getElementById('admin-user-input').value === window.ADMIN_USERNAME && document.getElementById('admin-pass-input').value === window.ADMIN_PASSWORD) { 
             window.isAdminLoggedIn = true; 
+            
+            window.tableUnlocked.dangdut = false; 
+            window.tableUnlocked.makam = false; 
+
             document.getElementById('admin-panel').style.display = 'block'; 
             showTransactionForm();
 
@@ -962,6 +954,8 @@
             
             document.getElementById('input-new-user').value = window.ADMIN_USERNAME;
             document.getElementById('input-new-pass').value = window.ADMIN_PASSWORD;
+
+            setYearFilter('dangdut', '2027');
 
             loadAppUrlSettingsUI();
             renderAll(); 
@@ -1124,11 +1118,7 @@
             dateVal = dateInputEl.value.trim();
         } else {
             var currentMonthDay = "01-01";
-            if (targetOption === '2027' || targetOption === '2026') {
-                dateVal = targetOption + "-" + currentMonthDay;
-            } else {
-                dateVal = "2026-08-01";
-            }
+            dateVal = "2027-" + currentMonthDay;
         }
 
         var descVal = document.getElementById('input-desc').value;
@@ -1176,10 +1166,15 @@
     }
 
     function editItem(category, id) {
-        if (!window.isAdminLoggedIn || !window.tableUnlocked[category]) return;
+        if (!window.isAdminLoggedIn) return;
         
         var item = window.store[category].find(i => i.id === id);
         if (!item) return;
+
+        if (category === 'dangdut' && item.date && item.date.startsWith("2026")) {
+            alert("Data tahun 2026 bersifat PATEN dan tidak dapat diubah!");
+            return;
+        }
 
         showTransactionForm();
 
@@ -1188,11 +1183,8 @@
         var targetSelect = document.getElementById('input-year-target');
         if (category === 'makam') {
             targetSelect.value = 'makam';
-        } else if (item.date && item.date.length >= 4) {
-            var yr = item.date.substring(0, 4);
-            if (yr === '2026' || yr === '2027') {
-                targetSelect.value = yr;
-            }
+        } else {
+            targetSelect.value = '2027';
         }
 
         var dateInputEl = document.getElementById('input-date');
@@ -1229,7 +1221,13 @@
     }
 
     function deleteItem(category, id) {
-        if (!window.isAdminLoggedIn || !window.tableUnlocked[category]) return;
+        if (!window.isAdminLoggedIn) return;
+
+        var item = window.store[category].find(i => i.id === id);
+        if (category === 'dangdut' && item && item.date && item.date.startsWith("2026")) {
+            alert("Data tahun 2026 bersifat PATEN dan tidak dapat dihapus!");
+            return;
+        }
 
         if (confirm("Apakah Anda yakin ingin menghapus data ini?")) {
             window.store[category] = window.store[category].filter(item => item.id !== id);
@@ -1250,7 +1248,7 @@
 
         if (tabKey === 'dangdut') {
             yearSelector.style.display = 'flex';
-            if (targetSelect) targetSelect.value = window.activeFilter.dangdutYear;
+            if (targetSelect) targetSelect.value = '2027';
         } else {
             yearSelector.style.display = 'none';
             if (targetSelect) targetSelect.value = 'makam';
@@ -1263,7 +1261,6 @@
         render('dangdut'); 
         render('makam'); 
         updateFooterVisibility();
-        updateYearSelectorVisibility();
     }
 
     function render(key) {
@@ -1272,7 +1269,19 @@
 
         var tbody = document.getElementById(key + '-tbody');
         tbody.innerHTML = "";
-        
+
+        var btn2026 = document.getElementById('filter-dangdut-2026');
+        if (btn2026) {
+            if (window.isAdminLoggedIn) {
+                btn2026.style.display = 'none';
+                if (window.activeFilter['dangdutYear'] === '2026') {
+                    window.activeFilter['dangdutYear'] = '2027';
+                }
+            } else {
+                btn2026.style.display = 'inline-block';
+            }
+        }
+
         var selectedType = window.activeFilter[key + 'Type'];
         var selectedYear = key === 'dangdut' ? window.activeFilter['dangdutYear'] : '2027';
         var searchQuery = document.getElementById('search-' + key) ? document.getElementById('search-' + key).value.toLowerCase() : "";
@@ -1282,18 +1291,14 @@
         if (key === 'dangdut') {
             var tableTitleEl = document.getElementById('dangdut-table-title');
             if (tableTitleEl) {
-                if (selectedYear === '2026') {
-                    tableTitleEl.innerText = "📋 Data Transaksi Dangdut Halal Bihalal 2026";
-                } else if (selectedYear === '2027') {
-                    tableTitleEl.innerText = "📋 Data Transaksi Dangdut Halal Bihalal Acara 2027";
-                }
+                tableTitleEl.innerText = "📋 Data Transaksi Dangdut Halal Bihalal " + (selectedYear === '2026' ? '2026' : 'Acara 2027');
             }
         }
 
         if (window.isAdminLoggedIn) {
             thAction.style.display = 'table-cell';
             var isUnlocked = window.tableUnlocked[key];
-            thAction.innerHTML = `AKSI <span style="cursor:pointer; font-size:13px; margin-left:4px;" onclick="toggleTableLock('${key}')" title="${isUnlocked ? 'Klik untuk Kunci' : 'Klik untuk Buka Gembok'}">${isUnlocked ? '🔓' : '🔒'}</span>`;
+            thAction.innerHTML = `AKSI <span class="lock-btn-toggle" onclick="toggleTableLock('${key}')" title="${isUnlocked ? 'Klik untuk Kunci' : 'Klik untuk Buka Gembok'}">${isUnlocked ? '🔓' : '🔒'}</span>`;
         } else {
             thAction.style.display = 'none';
         }
@@ -1328,7 +1333,9 @@
                 var tdActionHtml = "";
 
                 if (window.isAdminLoggedIn) {
-                    if (window.tableUnlocked[key]) {
+                    if (key === 'dangdut' && item.date && item.date.startsWith("2026")) {
+                        tdActionHtml = `<td class="col-aksi" style="color:#e53e3e; font-size:11px; font-weight:bold;">Paten 🔒</td>`;
+                    } else if (window.tableUnlocked[key]) {
                         var actionBtns = `<div class="action-btns">
                             <button class="btn-action btn-edit" onclick="editItem('${key}',${item.id})">✏️</button>
                             <button class="btn-action btn-delete" onclick="deleteItem('${key}',${item.id})">🗑️</button>
