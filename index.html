@@ -660,7 +660,8 @@
 </div>
 
 <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPtub4bV0W1b_fnhX0kqKYNzIVCZg4C-SthsYSa-HX-ijmwPnETx6HK_rT2JS4HLUt/exec";
+    // URL Google Apps Script Anda yang baru
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwo-ha6TcDuIpNXNIwGAbawB3BOQIumnXRWInnP3dH63BIhqJt6m0Z8VvTc1z2g_mbVXA/exec";
 
     window.safeGetStorage = function(key, fallback) { try { var val = localStorage.getItem(key); return val ? JSON.parse(val) : fallback; } catch (e) { return fallback; } };
     window.safeSetStorage = function(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} };
@@ -695,8 +696,6 @@
     };
 
     window.store = window.safeGetStorage('kembang_store', window.initialStore);
-
-    let autoPollingInterval = null;
 
     function openDatePicker() {
         var datePicker = document.getElementById('native-date-picker');
@@ -804,22 +803,14 @@
         }
     });
 
-    async function syncToGoogleSheet(actionType, payload) {
+    function syncToGoogleSheet(actionType, payload) {
         if (!APPS_SCRIPT_URL) return;
-        try {
-            await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: actionType, data: payload })
-            });
-            // Setelah sync terkirim, tarik ulang data terbaru setelah delay singkat
-            setTimeout(() => {
-                fetchDataFromSheet();
-            }, 1000);
-        } catch (err) {
-            console.error("Sync Error:", err);
-        }
+        fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: actionType, data: payload })
+        }).catch(err => console.error("Sync Error:", err));
     }
 
     function fetchDataFromSheet() {
@@ -853,24 +844,12 @@
                         document.getElementById('footer-date-text').innerText = window.store.lastUpdate;
                     }
                     
-                    // Render ulang tampilan hanya jika admin sedang tidak mengisi edit form
-                    let editIdVal = document.getElementById('edit-id') ? document.getElementById('edit-id').value : "";
-                    if (!editIdVal) {
-                        renderAll();
-                    }
+                    renderAll();
                 }
             })
             .catch(err => {
                 console.error("Gagal mengambil data, menggunakan data lokal:", err);
             });
-    }
-
-    function startAutoPolling() {
-        if (autoPollingInterval) clearInterval(autoPollingInterval);
-        // Polling otomatis setiap 8 detik
-        autoPollingInterval = setInterval(() => {
-            fetchDataFromSheet();
-        }, 8000);
     }
 
     function isWebView() {
@@ -894,7 +873,6 @@
         renderAll(); 
 
         fetchDataFromSheet();
-        startAutoPolling();
 
         const downloadBtn = document.getElementById('download-app-btn');
         if (downloadBtn) {
@@ -1211,18 +1189,14 @@
 
         if (editId) {
             var numericEditId = parseInt(editId);
-            
             window.store.dangdut = window.store.dangdut.filter(item => item.id !== numericEditId);
             window.store.makam = window.store.makam.filter(item => item.id !== numericEditId);
-
             window.store[cat].push(transactionPayload);
             window.safeSetStorage('kembang_store', window.store);
-
             syncToGoogleSheet('edit', transactionPayload);
         } else {
             window.store[cat].push(transactionPayload);
             window.safeSetStorage('kembang_store', window.store);
-            
             syncToGoogleSheet('add', transactionPayload);
         }
     }
