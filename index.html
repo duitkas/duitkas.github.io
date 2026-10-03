@@ -696,6 +696,8 @@
 
     window.store = window.safeGetStorage('kembang_store', window.initialStore);
 
+    let autoPollingInterval = null;
+
     function openDatePicker() {
         var datePicker = document.getElementById('native-date-picker');
         if (datePicker) {
@@ -802,14 +804,22 @@
         }
     });
 
-    function syncToGoogleSheet(actionType, payload) {
+    async function syncToGoogleSheet(actionType, payload) {
         if (!APPS_SCRIPT_URL) return;
-        fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: actionType, data: payload })
-        }).catch(err => console.error("Sync Error:", err));
+        try {
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: actionType, data: payload })
+            });
+            // Setelah sync terkirim, tarik ulang data terbaru setelah delay singkat
+            setTimeout(() => {
+                fetchDataFromSheet();
+            }, 1000);
+        } catch (err) {
+            console.error("Sync Error:", err);
+        }
     }
 
     function fetchDataFromSheet() {
@@ -843,12 +853,24 @@
                         document.getElementById('footer-date-text').innerText = window.store.lastUpdate;
                     }
                     
-                    renderAll();
+                    // Render ulang tampilan hanya jika admin sedang tidak mengisi edit form
+                    let editIdVal = document.getElementById('edit-id') ? document.getElementById('edit-id').value : "";
+                    if (!editIdVal) {
+                        renderAll();
+                    }
                 }
             })
             .catch(err => {
                 console.error("Gagal mengambil data, menggunakan data lokal:", err);
             });
+    }
+
+    function startAutoPolling() {
+        if (autoPollingInterval) clearInterval(autoPollingInterval);
+        // Polling otomatis setiap 8 detik
+        autoPollingInterval = setInterval(() => {
+            fetchDataFromSheet();
+        }, 8000);
     }
 
     function isWebView() {
@@ -872,6 +894,7 @@
         renderAll(); 
 
         fetchDataFromSheet();
+        startAutoPolling();
 
         const downloadBtn = document.getElementById('download-app-btn');
         if (downloadBtn) {
@@ -1126,7 +1149,6 @@
 
     function formatRupiah(number) { return "Rp " + number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
 
-    // Konversi string tanggal ke ISO (YYYY-MM-DD)
     function convertToISODate(dateStr) {
         if (!dateStr || dateStr.trim() === "" || dateStr === "-") return "";
         dateStr = dateStr.trim();
@@ -1143,7 +1165,6 @@
         return dateStr;
     }
 
-    // Format tanggal untuk tampilan tabel
     function formatDateNumeric(dateStr) {
         if (!dateStr || dateStr.trim() === "" || dateStr === "-") return "-";
         var str = dateStr.trim();
@@ -1154,7 +1175,6 @@
         return str;
     }
 
-    // FUNGSI SIMPAN & EDIT TRANSAKSI (TELAH DIPERBAIKI SINKRONISASINYA)
     function saveTransaction() {
         var editId = document.getElementById('edit-id').value;
         var targetOption = document.getElementById('input-year-target').value; 
@@ -1192,23 +1212,17 @@
         if (editId) {
             var numericEditId = parseInt(editId);
             
-            // 1. Hapus data lama dari kedua kategori
             window.store.dangdut = window.store.dangdut.filter(item => item.id !== numericEditId);
             window.store.makam = window.store.makam.filter(item => item.id !== numericEditId);
 
-            // 2. Masukkan data yang diperbarui ke kategori target
             window.store[cat].push(transactionPayload);
-
-            // 3. Simpan ke storage lokal
             window.safeSetStorage('kembang_store', window.store);
 
-            // 4. Kirim sinyal 'edit' ke Google Sheets
             syncToGoogleSheet('edit', transactionPayload);
         } else {
             window.store[cat].push(transactionPayload);
             window.safeSetStorage('kembang_store', window.store);
             
-            // Kirim sinyal 'add' untuk data baru
             syncToGoogleSheet('add', transactionPayload);
         }
     }
