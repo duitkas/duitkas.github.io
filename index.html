@@ -1114,11 +1114,17 @@
 
         var dateInputEl = document.getElementById('input-date');
         var dateVal = "";
-        if (dateInputEl && dateInputEl.type === 'date' && dateInputEl.value) {
+
+        // Cek apakah tanggal diisi manual oleh admin
+        if (dateInputEl && dateInputEl.value && dateInputEl.value.trim() !== "") {
             dateVal = dateInputEl.value.trim();
         } else {
-            var currentMonthDay = "01-01";
-            dateVal = "2027-" + currentMonthDay;
+            // Jika tidak diisi manual:
+            if (cat === 'makam') {
+                dateVal = ""; // Listrik Makam tampil strip (-)
+            } else {
+                dateVal = "2027-01-01"; // Kategori Dangdut tetap butuh filter tahun 2027
+            }
         }
 
         var descVal = document.getElementById('input-desc').value;
