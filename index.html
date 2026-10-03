@@ -627,7 +627,7 @@
 
         <div class="extra-toolbar">
             <input type="text" id="search-makam" class="search-input" placeholder="🔍 Cari keterangan..." oninput="render('makam')">
-            <button class="btn-print" onclick="window.print()">🖨️️ Cetak / Simpan PDF</button>
+            <button class="btn-print" onclick="window.print()">🖨 Cetak / Simpan PDF</button>
         </div>
 
         <div class="table-card">
@@ -660,8 +660,8 @@
 </div>
 
 <script>
-    // URL Google Apps Script Anda yang baru
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwo-ha6TcDuIpNXNIwGAbawB3BOQIumnXRWInnP3dH63BIhqJt6m0Z8VvTc1z2g_mbVXA/exec";
+    // URL Google Apps Script Anda yang terbaru
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAVvjgNiZoVl3-HrfNMU9vORkztJCyZ2XuxB31X3owNrvKXIaBgCWfBUsWSXp5SvXHDw/exec";
 
     window.safeGetStorage = function(key, fallback) { try { var val = localStorage.getItem(key); return val ? JSON.parse(val) : fallback; } catch (e) { return fallback; } };
     window.safeSetStorage = function(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} };
@@ -1155,7 +1155,7 @@
         return str;
     }
 
-    // FUNGSI SIMPAN & EDIT TRANSAKSI (TELAH DIPERBAIKI SINKRONISASINYA)
+    // FUNGSI SIMPAN & EDIT TRANSAKSI
     function saveTransaction() {
         var editId = document.getElementById('edit-id').value;
         var targetOption = document.getElementById('input-year-target').value; 
