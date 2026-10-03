@@ -627,7 +627,7 @@
 
         <div class="extra-toolbar">
             <input type="text" id="search-makam" class="search-input" placeholder="🔍 Cari keterangan..." oninput="render('makam')">
-            <button class="btn-print" onclick="window.print()">🖨 Cetak / Simpan PDF</button>
+            <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
         </div>
 
         <div class="table-card">
@@ -665,8 +665,8 @@
     window.safeGetStorage = function(key, fallback) { try { var val = localStorage.getItem(key); return val ? JSON.parse(val) : fallback; } catch (e) { return fallback; } };
     window.safeSetStorage = function(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} };
 
-    window.ADMIN_USERNAME = "Rawetjoy"; 
-    window.ADMIN_PASSWORD = "kembang"; 
+    window.ADMIN_USERNAME = window.safeGetStorage('kembang_user', "Rawetjoy"); 
+    window.ADMIN_PASSWORD = window.safeGetStorage('kembang_pass', "kembang"); 
     
     window.isAdminLoggedIn = false;
     window.tableUnlocked = { dangdut: false, makam: false };
@@ -694,8 +694,7 @@
         lastUpdate: "-"
     };
 
-    window.store = window.initialStore;
-    window.safeSetStorage('kembang_store', window.store);
+    window.store = window.safeGetStorage('kembang_store', window.initialStore);
 
     function openDatePicker() {
         var datePicker = document.getElementById('native-date-picker');
@@ -785,8 +784,8 @@
         const inputDate = document.getElementById('input-date');
         if (inputDate) {
             inputDate.addEventListener('input', function (e) {
-                let v = this.value.replace(/\D/g, ''); // Ambil hanya angka
-                if (v.length > 8) v = v.substring(0, 8); // Batasi maksimal 8 digit (DDMMYYYY)
+                let v = this.value.replace(/\D/g, ''); 
+                if (v.length > 8) v = v.substring(0, 8); 
                 
                 let formatted = '';
                 if (v.length > 0) {
@@ -1155,14 +1154,12 @@
         return str;
     }
 
+    // FUNGSI SIMPAN & EDIT TRANSAKSI (TELAH DIPERBAIKI SINKRONISASINYA)
     function saveTransaction() {
         var editId = document.getElementById('edit-id').value;
         var targetOption = document.getElementById('input-year-target').value; 
 
-        var cat = 'dangdut';
-        if (targetOption === 'makam') {
-            cat = 'makam';
-        }
+        var cat = (targetOption === 'makam') ? 'makam' : 'dangdut';
 
         var dateInputEl = document.getElementById('input-date');
         var dateVal = "";
@@ -1171,9 +1168,9 @@
             dateVal = convertToISODate(dateInputEl.value.trim());
         } else {
             if (cat === 'makam') {
-                dateVal = ""; // Listrik Makam tampil strip (-) jika dikosongkan
+                dateVal = ""; 
             } else {
-                dateVal = "2027-01-01"; // Kategori Dangdut default 2027
+                dateVal = "2027-01-01"; 
             }
         }
 
@@ -1193,16 +1190,27 @@
         };
 
         if (editId) {
-            var itemIndex = window.store[cat].findIndex(item => item.id == editId);
-            if (itemIndex !== -1) {
-                window.store[cat][itemIndex] = transactionPayload;
-            }
+            var numericEditId = parseInt(editId);
+            
+            // 1. Hapus data lama dari kedua kategori
+            window.store.dangdut = window.store.dangdut.filter(item => item.id !== numericEditId);
+            window.store.makam = window.store.makam.filter(item => item.id !== numericEditId);
+
+            // 2. Masukkan data yang diperbarui ke kategori target
+            window.store[cat].push(transactionPayload);
+
+            // 3. Simpan ke storage lokal
+            window.safeSetStorage('kembang_store', window.store);
+
+            // 4. Kirim sinyal 'edit' ke Google Sheets
+            syncToGoogleSheet('edit', transactionPayload);
         } else {
             window.store[cat].push(transactionPayload);
+            window.safeSetStorage('kembang_store', window.store);
+            
+            // Kirim sinyal 'add' untuk data baru
+            syncToGoogleSheet('add', transactionPayload);
         }
-
-        window.safeSetStorage('kembang_store', window.store);
-        syncToGoogleSheet('add', transactionPayload);
     }
 
     function handleFormSubmit(e) {
@@ -1384,43 +1392,49 @@
 
                 if (window.isAdminLoggedIn) {
                     if (key === 'dangdut' && item.date && item.date.startsWith("2026")) {
-                        tdActionHtml = `<td class="col-aksi" style="color:#e53e3e; font-size:11px; font-weight:bold;">Paten 🔒</td>`;
+                        tdActionHtml = `<td class="col-aksi"><span style="color:#a0aec0; font-size:11px;">🔒 PATEN</span></td>`;
                     } else if (window.tableUnlocked[key]) {
-                        var actionBtns = `<div class="action-btns">
-                            <button class="btn-action btn-edit" onclick="editItem('${key}',${item.id})">✏️</button>
-                            <button class="btn-action btn-delete" onclick="deleteItem('${key}',${item.id})">🗑️</button>
-                           </div>`;
-                        tdActionHtml = `<td class="col-aksi">${actionBtns}</td>`;
+                        tdActionHtml = `<td class="col-aksi">
+                            <div class="action-btns">
+                                <button class="btn-action btn-edit" onclick="editItem('${key}', ${item.id})" title="Edit">✏️</button>
+                                <button class="btn-action btn-delete" onclick="deleteItem('${key}', ${item.id})" title="Hapus">🗑️</button>
+                            </div>
+                        </td>`;
                     } else {
-                        tdActionHtml = `<td class="col-aksi" style="color:#718096; font-size:10px;">Terkunci 🔒</td>`;
+                        tdActionHtml = `<td class="col-aksi"><span style="color:#a0aec0; font-size:11px;">🔒 Terkunci</span></td>`;
                     }
                 }
 
+                var tr = document.createElement('tr');
+                var badgeClass = item.type === "Pemasukan" ? "badge-in" : "badge-out";
+                var badgeText = item.type === "Pemasukan" ? "Dana Masuk" : "Dana Keluar";
+
                 if (key === 'dangdut') {
-                    tbody.innerHTML += `<tr>
-                        <td class="col-no">${index+1}</td>
-                        <td class="col-nama">${item.desc || '-'}</td>
-                        <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type === 'Pemasukan' ? 'Dana Masuk' : 'Dana Keluar'}</span></td>
-                        <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>${window.isAdminLoggedIn ? tdActionHtml : ''}
-                    </tr>`;
+                    tr.innerHTML = `
+                        <td class="col-no">${index + 1}</td>
+                        <td class="col-nama">${item.desc}</td>
+                        <td class="col-jenis"><span class="badge ${badgeClass}">${badgeText}</span></td>
+                        <td class="col-jumlah">${formatRupiah(item.amount)}</td>
+                        ${tdActionHtml}
+                    `;
                 } else {
-                    var displayDate = formatDateNumeric(item.date);
-                    tbody.innerHTML += `<tr>
-                        <td class="col-no">${index+1}</td>
-                        <td class="col-nama">${item.desc || '-'}</td>
-                        <td class="col-jenis"><span class="badge ${item.type === 'Pemasukan' ? 'badge-in' : 'badge-out'}">${item.type === 'Pemasukan' ? 'Dana Masuk' : 'Dana Keluar'}</span></td>
-                        <td class="col-jumlah">${formatRupiah(item.amount || 0)}</td>
-                        <td class="col-tanggal">${displayDate}</td>${window.isAdminLoggedIn ? tdActionHtml : ''}
-                    </tr>`;
+                    tr.innerHTML = `
+                        <td class="col-no">${index + 1}</td>
+                        <td class="col-nama">${item.desc}</td>
+                        <td class="col-jenis"><span class="badge ${badgeClass}">${badgeText}</span></td>
+                        <td class="col-jumlah">${formatRupiah(item.amount)}</td>
+                        <td class="col-tanggal">${formatDateNumeric(item.date)}</td>
+                        ${tdActionHtml}
+                    `;
                 }
+                tbody.appendChild(tr);
             });
         }
-        
+
         document.getElementById(key + '-total-in').innerText = formatRupiah(totalIn);
         document.getElementById(key + '-total-out').innerText = formatRupiah(totalOut);
         document.getElementById(key + '-balance').innerText = formatRupiah(totalIn - totalOut);
     }
 </script>
-
 </body>
 </html>
