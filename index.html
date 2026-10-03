@@ -531,6 +531,7 @@
                     <option value="makam">Listrik Makam</option>
                 </select>
                 
+                <!-- INPUT TANGGAL KETIK MANUAL + AUTO FORMAT SLASH / + PEMILIH KALENDER -->
                 <div id="input-date-wrapper" style="display: flex; gap: 4px; align-items: center; position: relative;">
                     <input type="text" id="input-date" class="form-control" placeholder="Tgl (DD/MM/YYYY)" style="flex: 1;" maxlength="10">
                     <input type="date" id="native-date-picker" style="position: absolute; right: 0; opacity: 0; width: 36px; height: 100%; pointer-events: none;" onchange="onNativeDateSelected(this.value)">
@@ -557,7 +558,7 @@
         <button class="tab-btn" id="tab-btn-makam" onclick="switchMainTab('makam')">Listrik Makam</button>
     </div>
 
-    <!-- PILIHAN TAHUN UTAMA -->
+    <!-- PILIHAN TAHUN UTAMA (DEFAULT ACARA 2027) -->
     <div class="main-year-selector" id="main-year-selector-container">
         <span class="main-year-label">Laporan Tahun:</span>
         <button class="btn-filter" id="filter-dangdut-2026" onclick="setYearFilter('dangdut', '2026')">2026</button>
@@ -626,7 +627,7 @@
 
         <div class="extra-toolbar">
             <input type="text" id="search-makam" class="search-input" placeholder="🔍 Cari keterangan..." oninput="render('makam')">
-            <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+            <button class="btn-print" onclick="window.print()">🖨️️ Cetak / Simpan PDF</button>
         </div>
 
         <div class="table-card">
@@ -659,8 +660,8 @@
 </div>
 
 <script>
-    // URL Google Apps Script terbaru Anda
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby564PSNfcnDOgRk9r2_LITwz5eur7Tsp17NYEAXwTBDjWYv6dG4fUhLQ86UpbSxQ/exec";
+    // URL Web App Google Apps Script Anda yang sudah diterapkan secara otomatis
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwGr7erg-KLOoxfzzMDwE3AowQq4i9kfPwqYlFbjCgOY3wY6U0bnIkmRZJGP_8ebPoNxg/exec";
 
     window.safeGetStorage = function(key, fallback) { try { var val = localStorage.getItem(key); return val ? JSON.parse(val) : fallback; } catch (e) { return fallback; } };
     window.safeSetStorage = function(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} };
@@ -801,7 +802,7 @@
     });
 
     function syncToGoogleSheet(actionType, payload) {
-        if (!APPS_SCRIPT_URL) return;
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "URL_WEB_APP_ANDA_DISINI") return;
         fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -811,64 +812,13 @@
     }
 
     function fetchDataFromSheet() {
-        if (!APPS_SCRIPT_URL) return Promise.resolve();
+        if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "URL_WEB_APP_ANDA_DISINI") return Promise.resolve();
         return fetch(APPS_SCRIPT_URL + "?action=get")
             .then(res => res.json())
             .then(data => {
-                if (data) {
-                    if (data.settings) {
-                        if (data.settings.username) {
-                            window.ADMIN_USERNAME = data.settings.username;
-                            window.safeSetStorage('kembang_user', data.settings.username);
-                        }
-                        if (data.settings.password) {
-                            window.ADMIN_PASSWORD = data.settings.password;
-                            window.safeSetStorage('kembang_pass', data.settings.password);
-                        }
-                        if (data.settings.download_url) {
-                            window.safeSetStorage('kembang_download_url', data.settings.download_url);
-                            loadDownloadFileUrl();
-                        }
-                        if (data.settings.bg_url) {
-                            window.safeSetStorage('kembang_bg', data.settings.bg_url);
-                            loadBackground();
-                        }
-                        if (data.settings.bg_opacity) {
-                            window.safeSetStorage('kembang_bg_opacity', data.settings.bg_opacity);
-                            loadBackground();
-                        }
-                    }
-
-                    // Sistem Merge: Mencegah data lokal baru tertimpa latensi server Google Sheets
-                    if (Array.isArray(data.dangdut) && data.dangdut.length > 0) {
-                        let localDangdut = window.store.dangdut || [];
-                        let serverDangdut = data.dangdut;
-                        let mergedDangdutMap = new Map();
-                        
-                        serverDangdut.forEach(item => mergedDangdutMap.set(item.id, item));
-                        localDangdut.forEach(item => {
-                            if (!mergedDangdutMap.has(item.id)) {
-                                mergedDangdutMap.set(item.id, item);
-                            }
-                        });
-                        window.store.dangdut = Array.from(mergedDangdutMap.values());
-                    }
-
-                    if (Array.isArray(data.makam) && data.makam.length > 0) {
-                        let localMakam = window.store.makam || [];
-                        let serverMakam = (data.makam || []).filter(i => i.id !== 999999999 && i.type !== "Metadata");
-                        let mergedMakamMap = new Map();
-                        
-                        serverMakam.forEach(item => mergedMakamMap.set(item.id, item));
-                        localMakam.forEach(item => {
-                            if (!mergedMakamMap.has(item.id) && item.id !== 999999999) {
-                                mergedMakamMap.set(item.id, item);
-                            }
-                        });
-                        window.store.makam = Array.from(mergedMakamMap.values());
-                    }
-
-                    let metaRecords = (data.makam || []).filter(i => i.id === 999999999 || i.type === "Metadata");
+                if (data && (Array.isArray(data.dangdut) || Array.isArray(data.makam))) {
+                    let allData = [...(data.dangdut || []), ...(data.makam || [])];
+                    let metaRecords = allData.filter(i => i.id === 999999999 || i.type === "Metadata");
                     let metaDate = "-";
                     
                     if (metaRecords.length > 0) {
@@ -877,7 +827,14 @@
                         metaDate = window.store.lastUpdate; 
                     }
 
+                    if (data.dangdut && data.dangdut.length > 0) {
+                        window.store = data;
+                    }
                     window.store.lastUpdate = metaDate;
+                    
+                    if(window.store.dangdut) window.store.dangdut = window.store.dangdut.filter(i => i.id !== 999999999 && i.type !== "Metadata");
+                    if(window.store.makam) window.store.makam = window.store.makam.filter(i => i.id !== 999999999 && i.type !== "Metadata");
+
                     window.safeSetStorage('kembang_store', window.store);
                     
                     if (window.store.lastUpdate && window.store.lastUpdate !== "-") {
@@ -912,10 +869,7 @@
         loadDownloadFileUrl();
         renderAll(); 
 
-        // Beri jeda 2 detik saat pertama kali buka agar sinkronisasi aman dari latensi
-        setTimeout(function() {
-            fetchDataFromSheet();
-        }, 2000);
+        fetchDataFromSheet();
 
         const downloadBtn = document.getElementById('download-app-btn');
         if (downloadBtn) {
@@ -1096,12 +1050,10 @@
         if (urlVal) {
             window.safeSetStorage('kembang_download_url', urlVal);
             loadDownloadFileUrl();
-            syncToGoogleSheet('update_settings', { key: 'download_url', value: urlVal });
-            alert("✅ URL Download Aplikasi (.apk) berhasil disimpan & disinkronkan!");
+            alert("✅ URL Download Aplikasi (.apk) berhasil disimpan & diperbarui!");
         } else {
             window.safeSetStorage('kembang_download_url', "#");
             loadDownloadFileUrl();
-            syncToGoogleSheet('update_settings', { key: 'download_url', value: "#" });
             alert("URL dikosongkan.");
         }
     }
@@ -1124,11 +1076,7 @@
             window.ADMIN_PASSWORD = newPass;
             window.safeSetStorage('kembang_user', newUser);
             window.safeSetStorage('kembang_pass', newPass);
-
-            syncToGoogleSheet('update_settings', { key: 'username', value: newUser });
-            syncToGoogleSheet('update_settings', { key: 'password', value: newPass });
-
-            alert("✅ Username & Password berhasil diperbarui dan disinkronkan!");
+            alert("✅ Username & Password berhasil diperbarui!");
             showTransactionForm();
         } else {
             alert("Harap isi Username dan Password baru!");
@@ -1152,8 +1100,7 @@
         if (url) {
             window.safeSetStorage('kembang_bg', url);
             document.getElementById('bg-overlay').style.backgroundImage = `url('${url}')`;
-            syncToGoogleSheet('update_settings', { key: 'bg_url', value: url });
-            alert("Gambar background berhasil diperbarui & disinkronkan!");
+            alert("Gambar background berhasil diperbarui!");
         }
     }
 
@@ -1161,7 +1108,6 @@
         document.getElementById('bg-overlay').style.opacity = val;
         document.getElementById('bg-opacity-label').innerText = Math.round(val * 100) + "%";
         window.safeSetStorage('kembang_bg_opacity', val);
-        syncToGoogleSheet('update_settings', { key: 'bg_opacity', value: val });
     }
 
     function resetBackground() {
@@ -1174,9 +1120,6 @@
         document.getElementById('input-bg-url').value = window.defaultBg;
         document.getElementById('bg-opacity-slider').value = "0.15";
         document.getElementById('bg-opacity-label').innerText = "15%";
-
-        syncToGoogleSheet('update_settings', { key: 'bg_url', value: window.defaultBg });
-        syncToGoogleSheet('update_settings', { key: 'bg_opacity', value: "0.15" });
     }
 
     function formatRupiah(number) { return "Rp " + number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
