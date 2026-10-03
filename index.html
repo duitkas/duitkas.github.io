@@ -531,7 +531,6 @@
                     <option value="makam">Listrik Makam</option>
                 </select>
                 
-                <!-- INPUT TANGGAL KETIK MANUAL + AUTO FORMAT SLASH / + PEMILIH KALENDER -->
                 <div id="input-date-wrapper" style="display: flex; gap: 4px; align-items: center; position: relative;">
                     <input type="text" id="input-date" class="form-control" placeholder="Tgl (DD/MM/YYYY)" style="flex: 1;" maxlength="10">
                     <input type="date" id="native-date-picker" style="position: absolute; right: 0; opacity: 0; width: 36px; height: 100%; pointer-events: none;" onchange="onNativeDateSelected(this.value)">
@@ -558,7 +557,7 @@
         <button class="tab-btn" id="tab-btn-makam" onclick="switchMainTab('makam')">Listrik Makam</button>
     </div>
 
-    <!-- PILIHAN TAHUN UTAMA (DEFAULT ACARA 2027) -->
+    <!-- PILIHAN TAHUN UTAMA -->
     <div class="main-year-selector" id="main-year-selector-container">
         <span class="main-year-label">Laporan Tahun:</span>
         <button class="btn-filter" id="filter-dangdut-2026" onclick="setYearFilter('dangdut', '2026')">2026</button>
@@ -627,7 +626,7 @@
 
         <div class="extra-toolbar">
             <input type="text" id="search-makam" class="search-input" placeholder="🔍 Cari keterangan..." oninput="render('makam')">
-            <button class="btn-print" onclick="window.print()">🖨 Cetak / Simpan PDF</button>
+            <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
         </div>
 
         <div class="table-card">
@@ -660,8 +659,8 @@
 </div>
 
 <script>
-    // URL Google Apps Script Anda yang terbaru
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAVvjgNiZoVl3-HrfNMU9vORkztJCyZ2XuxB31X3owNrvKXIaBgCWfBUsWSXp5SvXHDw/exec";
+    // URL Google Apps Script terbaru Anda yang terhubung dengan pengaturan server
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBm8FU7yKBTpYMC7zIHPEU7pMYj5OG5Pk1iU1i-2mqXa4hsd9k9xTASf3gSoGb3CjHgQ/exec";
 
     window.safeGetStorage = function(key, fallback) { try { var val = localStorage.getItem(key); return val ? JSON.parse(val) : fallback; } catch (e) { return fallback; } };
     window.safeSetStorage = function(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} };
@@ -767,7 +766,6 @@
             document.getElementById('footer-date-text').innerText = "-";
         }
 
-        // Format Otomatis Rupiah
         const inputAmount = document.getElementById('input-amount');
         if (inputAmount) {
             inputAmount.type = "text";
@@ -781,7 +779,6 @@
             });
         }
 
-        // Format Otomatis Sekat Tanggal (DD/MM/YYYY)
         const inputDate = document.getElementById('input-date');
         if (inputDate) {
             inputDate.addEventListener('input', function (e) {
@@ -818,33 +815,61 @@
         return fetch(APPS_SCRIPT_URL + "?action=get")
             .then(res => res.json())
             .then(data => {
-                if (data && (Array.isArray(data.dangdut) || Array.isArray(data.makam))) {
-                    
-                    let allData = [...(data.dangdut || []), ...(data.makam || [])];
-                    let metaRecords = allData.filter(i => i.id === 999999999 || i.type === "Metadata");
-                    let metaDate = "-";
-                    
-                    if (metaRecords.length > 0) {
-                        metaDate = metaRecords[metaRecords.length - 1].date;
-                    } else if (window.store.lastUpdate) {
-                        metaDate = window.store.lastUpdate; 
+                if (data) {
+                    // Sinkronisasi data pengaturan global dari sheet
+                    if (data.settings) {
+                        if (data.settings.username) {
+                            window.ADMIN_USERNAME = data.settings.username;
+                            window.safeSetStorage('kembang_user', data.settings.username);
+                        }
+                        if (data.settings.password) {
+                            window.ADMIN_PASSWORD = data.settings.password;
+                            window.safeSetStorage('kembang_pass', data.settings.password);
+                        }
+                        if (data.settings.download_url) {
+                            window.safeSetStorage('kembang_download_url', data.settings.download_url);
+                            loadDownloadFileUrl();
+                        }
+                        if (data.settings.bg_url) {
+                            window.safeSetStorage('kembang_bg', data.settings.bg_url);
+                            loadBackground();
+                        }
+                        if (data.settings.bg_opacity) {
+                            window.safeSetStorage('kembang_bg_opacity', data.settings.bg_opacity);
+                            loadBackground();
+                        }
                     }
 
-                    if (data.dangdut && data.dangdut.length > 0) {
-                        window.store = data;
-                    }
-                    window.store.lastUpdate = metaDate;
-                    
-                    if(window.store.dangdut) window.store.dangdut = window.store.dangdut.filter(i => i.id !== 999999999 && i.type !== "Metadata");
-                    if(window.store.makam) window.store.makam = window.store.makam.filter(i => i.id !== 999999999 && i.type !== "Metadata");
+                    if (Array.isArray(data.dangdut) || Array.isArray(data.makam)) {
+                        let allData = [...(data.dangdut || []), ...(data.makam || [])];
+                        let metaRecords = allData.filter(i => i.id === 999999999 || i.type === "Metadata");
+                        let metaDate = "-";
+                        
+                        if (metaRecords.length > 0) {
+                            metaDate = metaRecords[metaRecords.length - 1].date;
+                        } else if (window.store.lastUpdate) {
+                            metaDate = window.store.lastUpdate; 
+                        }
 
-                    window.safeSetStorage('kembang_store', window.store);
-                    
-                    if (window.store.lastUpdate && window.store.lastUpdate !== "-") {
-                        document.getElementById('footer-date-text').innerText = window.store.lastUpdate;
+                        if (data.dangdut && data.dangdut.length > 0) {
+                            window.store.dangdut = data.dangdut;
+                        }
+                        if (data.makam && data.makam.length > 0) {
+                            window.store.makam = data.makam;
+                        }
+                        window.store.lastUpdate = metaDate;
+                        
+                        if(window.store.dangdut) window.store.dangdut = window.store.dangdut.filter(i => i.id !== 999999999 && i.type !== "Metadata");
+                        if(window.store.makam) window.store.makam = window.store.makam.filter(i => i.id !== 999999999 && i.type !== "Metadata");
+
+                        window.safeSetStorage('kembang_store', window.store);
+                        
+                        if (window.store.lastUpdate && window.store.lastUpdate !== "-") {
+                            document.getElementById('footer-date-text').innerText = window.store.lastUpdate;
+                        }
+                        
+                        renderAll();
                     }
-                    
-                    renderAll();
                 }
             })
             .catch(err => {
@@ -1053,10 +1078,12 @@
         if (urlVal) {
             window.safeSetStorage('kembang_download_url', urlVal);
             loadDownloadFileUrl();
-            alert("✅ URL Download Aplikasi (.apk) berhasil disimpan & diperbarui!");
+            syncToGoogleSheet('update_settings', { key: 'download_url', value: urlVal });
+            alert("✅ URL Download Aplikasi (.apk) berhasil disimpan & disinkronkan!");
         } else {
             window.safeSetStorage('kembang_download_url', "#");
             loadDownloadFileUrl();
+            syncToGoogleSheet('update_settings', { key: 'download_url', value: "#" });
             alert("URL dikosongkan.");
         }
     }
@@ -1079,7 +1106,11 @@
             window.ADMIN_PASSWORD = newPass;
             window.safeSetStorage('kembang_user', newUser);
             window.safeSetStorage('kembang_pass', newPass);
-            alert("✅ Username & Password berhasil diperbarui!");
+
+            syncToGoogleSheet('update_settings', { key: 'username', value: newUser });
+            syncToGoogleSheet('update_settings', { key: 'password', value: newPass });
+
+            alert("✅ Username & Password berhasil diperbarui dan disinkronkan!");
             showTransactionForm();
         } else {
             alert("Harap isi Username dan Password baru!");
@@ -1103,7 +1134,8 @@
         if (url) {
             window.safeSetStorage('kembang_bg', url);
             document.getElementById('bg-overlay').style.backgroundImage = `url('${url}')`;
-            alert("Gambar background berhasil diperbarui!");
+            syncToGoogleSheet('update_settings', { key: 'bg_url', value: url });
+            alert("Gambar background berhasil diperbarui & disinkronkan!");
         }
     }
 
@@ -1111,6 +1143,7 @@
         document.getElementById('bg-overlay').style.opacity = val;
         document.getElementById('bg-opacity-label').innerText = Math.round(val * 100) + "%";
         window.safeSetStorage('kembang_bg_opacity', val);
+        syncToGoogleSheet('update_settings', { key: 'bg_opacity', value: val });
     }
 
     function resetBackground() {
@@ -1123,11 +1156,13 @@
         document.getElementById('input-bg-url').value = window.defaultBg;
         document.getElementById('bg-opacity-slider').value = "0.15";
         document.getElementById('bg-opacity-label').innerText = "15%";
+
+        syncToGoogleSheet('update_settings', { key: 'bg_url', value: window.defaultBg });
+        syncToGoogleSheet('update_settings', { key: 'bg_opacity', value: "0.15" });
     }
 
     function formatRupiah(number) { return "Rp " + number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
 
-    // Konversi string tanggal ke ISO (YYYY-MM-DD)
     function convertToISODate(dateStr) {
         if (!dateStr || dateStr.trim() === "" || dateStr === "-") return "";
         dateStr = dateStr.trim();
@@ -1144,7 +1179,6 @@
         return dateStr;
     }
 
-    // Format tanggal untuk tampilan tabel
     function formatDateNumeric(dateStr) {
         if (!dateStr || dateStr.trim() === "" || dateStr === "-") return "-";
         var str = dateStr.trim();
@@ -1155,7 +1189,6 @@
         return str;
     }
 
-    // FUNGSI SIMPAN & EDIT TRANSAKSI
     function saveTransaction() {
         var editId = document.getElementById('edit-id').value;
         var targetOption = document.getElementById('input-year-target').value; 
@@ -1192,24 +1225,14 @@
 
         if (editId) {
             var numericEditId = parseInt(editId);
-            
-            // 1. Hapus data lama dari kedua kategori
             window.store.dangdut = window.store.dangdut.filter(item => item.id !== numericEditId);
             window.store.makam = window.store.makam.filter(item => item.id !== numericEditId);
-
-            // 2. Masukkan data yang diperbarui ke kategori target
             window.store[cat].push(transactionPayload);
-
-            // 3. Simpan ke storage lokal
             window.safeSetStorage('kembang_store', window.store);
-
-            // 4. Kirim sinyal 'edit' ke Google Sheets
             syncToGoogleSheet('edit', transactionPayload);
         } else {
             window.store[cat].push(transactionPayload);
             window.safeSetStorage('kembang_store', window.store);
-            
-            // Kirim sinyal 'add' untuk data baru
             syncToGoogleSheet('add', transactionPayload);
         }
     }
