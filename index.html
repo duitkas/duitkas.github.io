@@ -530,9 +530,14 @@
                     <option value="2027" id="opt-target-2027" selected>Acara 2027</option>
                     <option value="makam">Listrik Makam</option>
                 </select>
-                <div id="input-date-wrapper">
-                    <input type="text" id="input-date" class="form-control" placeholder="Pilih Tanggal">
+                
+                <!-- INPUT TANGGAL KETIK MANUAL + AUTO FORMAT SLASH / + PEMILIH KALENDER -->
+                <div id="input-date-wrapper" style="display: flex; gap: 4px; align-items: center; position: relative;">
+                    <input type="text" id="input-date" class="form-control" placeholder="Tgl (DD/MM/YYYY)" style="flex: 1;" maxlength="10">
+                    <input type="date" id="native-date-picker" style="position: absolute; right: 0; opacity: 0; width: 36px; height: 100%; pointer-events: none;" onchange="onNativeDateSelected(this.value)">
+                    <button type="button" class="btn-icon-bg" onclick="openDatePicker()" title="Pilih Tanggal Kalender" style="padding: 5px 8px; font-size: 15px;">📅</button>
                 </div>
+
                 <select id="input-type" class="form-control">
                     <option value="Pemasukan">Dana Masuk (+)</option>
                     <option value="Pengeluaran">Dana Keluar (-)</option>
@@ -669,7 +674,6 @@
     window.defaultBg = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000";
     window.defaultDownloadUrl = "https://files.catbox.moe/1gh82i.apk";
 
-    // SET DEFAULT DANGDUT TAHUN TERAMBIL: 2027
     window.activeFilter = {
         dangdutType: 'Pemasukan',
         dangdutYear: '2027',
@@ -692,6 +696,27 @@
 
     window.store = window.initialStore;
     window.safeSetStorage('kembang_store', window.store);
+
+    function openDatePicker() {
+        var datePicker = document.getElementById('native-date-picker');
+        if (datePicker) {
+            var currentVal = document.getElementById('input-date').value;
+            var isoVal = convertToISODate(currentVal);
+            if (isoVal) datePicker.value = isoVal;
+            
+            if (datePicker.showPicker) {
+                datePicker.showPicker();
+            } else {
+                datePicker.click();
+            }
+        }
+    }
+
+    function onNativeDateSelected(val) {
+        if (val) {
+            document.getElementById('input-date').value = formatDateNumeric(val);
+        }
+    }
 
     function updateFooterDate(dateString) {
         var footerDateEl = document.getElementById('footer-date-text');
@@ -742,6 +767,7 @@
             document.getElementById('footer-date-text').innerText = "-";
         }
 
+        // Format Otomatis Rupiah
         const inputAmount = document.getElementById('input-amount');
         if (inputAmount) {
             inputAmount.type = "text";
@@ -755,19 +781,24 @@
             });
         }
 
-        const inputTgl = document.getElementById('input-date');
-        if (inputTgl) {
-            inputTgl.addEventListener('focus', function() {
-                this.type = 'date';
-                if (typeof this.showPicker === 'function') {
-                    this.showPicker();
+        // Format Otomatis Sekat Tanggal (DD/MM/YYYY)
+        const inputDate = document.getElementById('input-date');
+        if (inputDate) {
+            inputDate.addEventListener('input', function (e) {
+                let v = this.value.replace(/\D/g, ''); // Ambil hanya angka
+                if (v.length > 8) v = v.substring(0, 8); // Batasi maksimal 8 digit (DDMMYYYY)
+                
+                let formatted = '';
+                if (v.length > 0) {
+                    formatted = v.substring(0, 2);
+                    if (v.length > 2) {
+                        formatted += '/' + v.substring(2, 4);
+                        if (v.length > 4) {
+                            formatted += '/' + v.substring(4, 8);
+                        }
+                    }
                 }
-            });
-
-            inputTgl.addEventListener('blur', function() {
-                if (!this.value) {
-                    this.type = 'text';
-                }
+                this.value = formatted;
             });
         }
     });
@@ -1096,11 +1127,32 @@
 
     function formatRupiah(number) { return "Rp " + number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
 
+    // Konversi string tanggal ke ISO (YYYY-MM-DD)
+    function convertToISODate(dateStr) {
+        if (!dateStr || dateStr.trim() === "" || dateStr === "-") return "";
+        dateStr = dateStr.trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+        
+        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateStr)) {
+            var p = dateStr.split('/');
+            return `${p[2]}-${p[1].padStart(2, '0')}-${p[0].padStart(2, '0')}`;
+        }
+        if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(dateStr)) {
+            var p2 = dateStr.split('-');
+            return `${p2[2]}-${p2[1].padStart(2, '0')}-${p2[0].padStart(2, '0')}`;
+        }
+        return dateStr;
+    }
+
+    // Format tanggal untuk tampilan tabel
     function formatDateNumeric(dateStr) {
-        if (!dateStr || dateStr.trim() === "") return "-";
-        var parts = dateStr.split("-");
-        if (parts.length !== 3) return dateStr;
-        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        if (!dateStr || dateStr.trim() === "" || dateStr === "-") return "-";
+        var str = dateStr.trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+            var parts = str.split("-");
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return str;
     }
 
     function saveTransaction() {
@@ -1115,15 +1167,13 @@
         var dateInputEl = document.getElementById('input-date');
         var dateVal = "";
 
-        // Cek apakah tanggal diisi manual oleh admin
         if (dateInputEl && dateInputEl.value && dateInputEl.value.trim() !== "") {
-            dateVal = dateInputEl.value.trim();
+            dateVal = convertToISODate(dateInputEl.value.trim());
         } else {
-            // Jika tidak diisi manual:
             if (cat === 'makam') {
-                dateVal = ""; // Listrik Makam tampil strip (-)
+                dateVal = ""; // Listrik Makam tampil strip (-) jika dikosongkan
             } else {
-                dateVal = "2027-01-01"; // Kategori Dangdut tetap butuh filter tahun 2027
+                dateVal = "2027-01-01"; // Kategori Dangdut default 2027
             }
         }
 
@@ -1195,14 +1245,9 @@
 
         var dateInputEl = document.getElementById('input-date');
         if (dateInputEl) {
-            if (item.date) {
-                dateInputEl.type = 'date';
-                dateInputEl.value = item.date;
-            } else {
-                dateInputEl.type = 'text';
-                dateInputEl.value = "";
-            }
+            dateInputEl.value = formatDateNumeric(item.date);
         }
+
         document.getElementById('input-type').value = item.type;
         document.getElementById('input-desc').value = item.desc;
         document.getElementById('input-amount').value = item.amount ? parseInt(item.amount, 10).toLocaleString('id-ID') : "";
@@ -1216,7 +1261,6 @@
         document.getElementById('edit-id').value = "";
         var dateInputEl = document.getElementById('input-date');
         if (dateInputEl) {
-            dateInputEl.type = 'text';
             dateInputEl.value = ""; 
         }
         document.getElementById('input-desc').value = "";
