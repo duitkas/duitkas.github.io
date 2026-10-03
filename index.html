@@ -659,7 +659,7 @@
 </div>
 
 <script>
-    // URL Google Apps Script terbaru Anda yang terhubung dengan pengaturan server
+    // URL Google Apps Script terbaru Anda
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby564PSNfcnDOgRk9r2_LITwz5eur7Tsp17NYEAXwTBDjWYv6dG4fUhLQ86UpbSxQ/exec";
 
     window.safeGetStorage = function(key, fallback) { try { var val = localStorage.getItem(key); return val ? JSON.parse(val) : fallback; } catch (e) { return fallback; } };
@@ -816,7 +816,6 @@
             .then(res => res.json())
             .then(data => {
                 if (data) {
-                    // Sinkronisasi data pengaturan global dari sheet
                     if (data.settings) {
                         if (data.settings.username) {
                             window.ADMIN_USERNAME = data.settings.username;
@@ -840,36 +839,52 @@
                         }
                     }
 
-                    if (Array.isArray(data.dangdut) || Array.isArray(data.makam)) {
-                        let allData = [...(data.dangdut || []), ...(data.makam || [])];
-                        let metaRecords = allData.filter(i => i.id === 999999999 || i.type === "Metadata");
-                        let metaDate = "-";
+                    // Sistem Merge: Mencegah data lokal baru tertimpa latensi server Google Sheets
+                    if (Array.isArray(data.dangdut) && data.dangdut.length > 0) {
+                        let localDangdut = window.store.dangdut || [];
+                        let serverDangdut = data.dangdut;
+                        let mergedDangdutMap = new Map();
                         
-                        if (metaRecords.length > 0) {
-                            metaDate = metaRecords[metaRecords.length - 1].date;
-                        } else if (window.store.lastUpdate) {
-                            metaDate = window.store.lastUpdate; 
-                        }
-
-                        if (data.dangdut && data.dangdut.length > 0) {
-                            window.store.dangdut = data.dangdut;
-                        }
-                        if (data.makam && data.makam.length > 0) {
-                            window.store.makam = data.makam;
-                        }
-                        window.store.lastUpdate = metaDate;
-                        
-                        if(window.store.dangdut) window.store.dangdut = window.store.dangdut.filter(i => i.id !== 999999999 && i.type !== "Metadata");
-                        if(window.store.makam) window.store.makam = window.store.makam.filter(i => i.id !== 999999999 && i.type !== "Metadata");
-
-                        window.safeSetStorage('kembang_store', window.store);
-                        
-                        if (window.store.lastUpdate && window.store.lastUpdate !== "-") {
-                            document.getElementById('footer-date-text').innerText = window.store.lastUpdate;
-                        }
-                        
-                        renderAll();
+                        serverDangdut.forEach(item => mergedDangdutMap.set(item.id, item));
+                        localDangdut.forEach(item => {
+                            if (!mergedDangdutMap.has(item.id)) {
+                                mergedDangdutMap.set(item.id, item);
+                            }
+                        });
+                        window.store.dangdut = Array.from(mergedDangdutMap.values());
                     }
+
+                    if (Array.isArray(data.makam) && data.makam.length > 0) {
+                        let localMakam = window.store.makam || [];
+                        let serverMakam = (data.makam || []).filter(i => i.id !== 999999999 && i.type !== "Metadata");
+                        let mergedMakamMap = new Map();
+                        
+                        serverMakam.forEach(item => mergedMakamMap.set(item.id, item));
+                        localMakam.forEach(item => {
+                            if (!mergedMakamMap.has(item.id) && item.id !== 999999999) {
+                                mergedMakamMap.set(item.id, item);
+                            }
+                        });
+                        window.store.makam = Array.from(mergedMakamMap.values());
+                    }
+
+                    let metaRecords = (data.makam || []).filter(i => i.id === 999999999 || i.type === "Metadata");
+                    let metaDate = "-";
+                    
+                    if (metaRecords.length > 0) {
+                        metaDate = metaRecords[metaRecords.length - 1].date;
+                    } else if (window.store.lastUpdate) {
+                        metaDate = window.store.lastUpdate; 
+                    }
+
+                    window.store.lastUpdate = metaDate;
+                    window.safeSetStorage('kembang_store', window.store);
+                    
+                    if (window.store.lastUpdate && window.store.lastUpdate !== "-") {
+                        document.getElementById('footer-date-text').innerText = window.store.lastUpdate;
+                    }
+                    
+                    renderAll();
                 }
             })
             .catch(err => {
@@ -897,7 +912,10 @@
         loadDownloadFileUrl();
         renderAll(); 
 
-        fetchDataFromSheet();
+        // Beri jeda 2 detik saat pertama kali buka agar sinkronisasi aman dari latensi
+        setTimeout(function() {
+            fetchDataFromSheet();
+        }, 2000);
 
         const downloadBtn = document.getElementById('download-app-btn');
         if (downloadBtn) {
