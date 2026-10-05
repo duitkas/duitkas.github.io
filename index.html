@@ -587,7 +587,7 @@
 
         <div class="extra-toolbar">
             <input type="text" id="search-dangdut" class="search-input" placeholder="🔍 Cari keterangan..." oninput="render('dangdut')">
-            <button class="btn-print" onclick="window.print()">🖨️️ Cetak / Simpan PDF</button>
+            <button class="btn-print" onclick="window.print()">🖨 Cetak / Simpan PDF</button>
         </div>
 
         <div class="table-card">
@@ -660,7 +660,7 @@
 </div>
 
 <script>
-    // URL Google Apps Script yang baru
+    // URL Google Apps Script
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxTSklvCfecu7XXQft8YKtHF_KrnqQkcPb7PSDxp9RMXA2bKa6DqBYtyuva3Wuf7UNd/exec";
 
     window.safeGetStorage = function(key, fallback) { try { var val = localStorage.getItem(key); return val ? JSON.parse(val) : fallback; } catch (e) { return fallback; } };
@@ -873,6 +873,13 @@
         renderAll(); 
 
         fetchDataFromSheet();
+
+        // FITUR AUTO-REFRESH: Mengecek data baru dari Google Sheets setiap 10 detik otomatis untuk HP lain
+        setInterval(function() {
+            if (!window.isAdminLoggedIn) { // Hanya tarik data otomatis jika tidak sedang mode login/edit
+                fetchDataFromSheet();
+            }
+        }, 10000);
 
         const downloadBtn = document.getElementById('download-app-btn');
         if (downloadBtn) {
@@ -1127,7 +1134,6 @@
 
     function formatRupiah(number) { return "Rp " + number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
 
-    // Konversi string tanggal ke ISO (YYYY-MM-DD)
     function convertToISODate(dateStr) {
         if (!dateStr || dateStr.trim() === "" || dateStr === "-") return "";
         dateStr = dateStr.trim();
@@ -1144,7 +1150,6 @@
         return dateStr;
     }
 
-    // Format tanggal untuk tampilan tabel
     function formatDateNumeric(dateStr) {
         if (!dateStr || dateStr.trim() === "" || dateStr === "-") return "-";
         var str = dateStr.trim();
@@ -1155,7 +1160,6 @@
         return str;
     }
 
-    // FUNGSI SIMPAN & EDIT TRANSAKSI (TELAH DIPERBAIKI SINKRONISASINYA)
     function saveTransaction() {
         var editId = document.getElementById('edit-id').value;
         var targetOption = document.getElementById('input-year-target').value; 
@@ -1193,23 +1197,15 @@
         if (editId) {
             var numericEditId = parseInt(editId);
             
-            // 1. Hapus data lama dari kedua kategori
             window.store.dangdut = window.store.dangdut.filter(item => item.id !== numericEditId);
             window.store.makam = window.store.makam.filter(item => item.id !== numericEditId);
 
-            // 2. Masukkan data yang diperbarui ke kategori target
             window.store[cat].push(transactionPayload);
-
-            // 3. Simpan ke storage lokal
             window.safeSetStorage('kembang_store', window.store);
-
-            // 4. Kirim sinyal 'edit' ke Google Sheets
             syncToGoogleSheet('edit', transactionPayload);
         } else {
             window.store[cat].push(transactionPayload);
             window.safeSetStorage('kembang_store', window.store);
-            
-            // Kirim sinyal 'add' untuk data baru
             syncToGoogleSheet('add', transactionPayload);
         }
     }
