@@ -660,8 +660,8 @@
 </div>
 
 <script>
-    // URL Google Apps Script yang baru
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1bhaxaz9tim5EpEsf3wXYwZyHWRSM5CuAYAB8qasQ8CoXCfOh6o6G_5NuyYsi7nnR/exec";
+    // URL Google Apps Script Anda yang baru dan sudah terintegrasi
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYY0Z4zTwWkCgNCAJjX_ikU5Juqr2p6w8IwAvQ_YmWMh7cLFpnc_RYoz5m9bYdviCB/exec";
 
     window.safeGetStorage = function(key, fallback) { try { var val = localStorage.getItem(key); return val ? JSON.parse(val) : fallback; } catch (e) { return fallback; } };
     window.safeSetStorage = function(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} };
@@ -876,7 +876,7 @@
 
         // FITUR AUTO-REFRESH: Mengecek data baru dari Google Sheets setiap 10 detik otomatis untuk HP lain
         setInterval(function() {
-            if (!window.isAdminLoggedIn) { // Hanya tarik data otomatis jika tidak sedang mode login/edit
+            if (!window.isAdminLoggedIn) { 
                 fetchDataFromSheet();
             }
         }, 10000);
